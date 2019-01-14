@@ -1,11 +1,12 @@
 
 import pandas as pd
+from sklearn.preprocessing import StandardScaler
 
 
 def parse_raw_data(filename):
     """Return a pandas dataframe containing the raw data to classify.
 
-    Data points should be in rows, features in columns. This function 
+    Data points should be in rows, features in columns. This function
     should do 'unopinionated' data cleaning: filling in NAs, normalizing
     names, etc.
     """
@@ -37,4 +38,5 @@ def normalize_data_raw(data_tbl):
 
 def normalize_data_total_sum(data_tbl):
     """Return a data table with each value divided by its row sum."""
-    pass
+    sc = StandardScaler()
+    return sc.fit_transform(data_tbl)

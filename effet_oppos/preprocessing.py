@@ -10,12 +10,20 @@ def parse_raw_data(filename):
     should do 'unopinionated' data cleaning: filling in NAs, normalizing
     names, etc.
     """
-    pass
+    tbl = pd.read_csv(filename, index_col=0)
+    tbl = tbl.fillna(0)
+    return tbl
 
 
 def parse_feature(metadata_filename, sample_names, feature_name='city'):
-    """Return a pandas series mapping sample_names to the given feature."""
-    pass
+    """Return a tuple of factorized features for our samples and a map
+    from factor values to feature names.
+    """
+    metadata = pd.read_csv(metadata_filename, index_col=0)
+    metadata = metadata.loc[sample_names]
+    feature = metadata[feature_name]
+    factorized, name_map = pd.factorize(feature)
+    return factorized, name_map
 
 
 def normalize_data(data_tbl, method='raw'):

@@ -6,7 +6,7 @@ Predict Metadata from Metagenomic Samples
 
 From source
 ```
-git clone git@github.com:Chandrima-04/effet_oppos.git
+git clone git@github.com:Chandrima-04/MetaSUB.git
 cd effet_oppos
 python setup.py install
 ```

@@ -11,6 +11,7 @@ from .classification import (
     split_data,
     train_model,
     predict_with_model,
+    multi_predict_with_model,
 )
 
 
@@ -39,6 +40,9 @@ def main(test_size, num_estimators, model_type, feature_name, normalize_method,
     click.echo(confusion_matrix(test_feature, predictions.round()))
     click.echo(classification_report(test_feature, predictions.round()))
     click.echo(accuracy_score(test_feature, predictions.round()))
+
+    multiclass_prediction = multi_predict_with_model(model,test_data)
+    click.echo(multiclass_prediction)
 
 
 if __name__ == '__main__':

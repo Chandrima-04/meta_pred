@@ -18,12 +18,13 @@ from .classification import (
 @click.command()
 @click.option('--test-size', default=0.2, help='The relative size of the test data')
 @click.option('--num-estimators', default=20, help='Number of trees in our random forest')
+@click.option('--num-neighbours', default=21, help='Number of clusters in our knn')
 @click.option('--model-type', default='random_forest', help='The model type to train')
 @click.option('--feature-name', default='city', help='The feature to predict')
 @click.option('--normalize-method', default='total_sum', help='Normalization method.')
 @click.argument('metadata_filename')
 @click.argument('data_filename')
-def main(test_size, num_estimators, model_type, feature_name, normalize_method,
+def main(test_size, num_estimators, num_neighbours, model_type, feature_name, normalize_method,
          metadata_filename, data_filename):
     """Train and evaluate a model. Print the model results to stderr."""
     click.echo(f'Training {model_type} to predict {feature_name}', err=True)
@@ -34,7 +35,7 @@ def main(test_size, num_estimators, model_type, feature_name, normalize_method,
         normalized, feature, test_size=test_size
     )
     model = train_model(
-        train_data, train_feature, method=model_type, n_estimators=num_estimators
+        train_data, train_feature, method=model_type, n_estimators=num_estimators, n_neighbours=num_neighbours
     )
     predictions = predict_with_model(model, test_data)
     click.echo(confusion_matrix(test_feature, predictions.round()))

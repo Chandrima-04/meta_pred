@@ -1,6 +1,6 @@
 import pandas as pd
 import click
-from sklearn.metrics import confusion_matrix, classification_report, accuracy_score
+from sklearn.metrics import f1_score, precision_score, recall_score, confusion_matrix, classification_report, accuracy_score
 
 from .preprocessing import (
     parse_raw_data,
@@ -29,10 +29,10 @@ from .classification import (
 def main(test_size, num_estimators, num_neighbours, model_type, feature_name, normalize_method, normalize_threshold,
          metadata_filename, data_filename):
     """Train and evaluate a model. Print the model results to stderr."""
-    model_name = ['random_forest', 'gaussian', 'knn', 'svm']
+    model_name = ['random_forest', 'gaussian', 'knn', 'svm', 'linear_svc', 'neural_network']
     normalize_model = ['raw', 'standard_scalar', 'total_sum', 'binary']
     i = 0
-    top1, top3, top5, top10, model_classifier, model_normalization = [],[], [], [], [], []
+    top1, top3, top5, top10, model_classifier, model_normalization, precision, recall = [],[], [], [], [], [], [], []
     for i in range(len(model_name)):
         j = 0
         for j in range(len(normalize_model)):
@@ -64,15 +64,22 @@ def main(test_size, num_estimators, num_neighbours, model_type, feature_name, no
             top10.append(predict_top_class[3])
             model_classifier.append(model_type)
             model_normalization.append(normalize_method)
+            precision_value = precision_score(test_feature, predictions.round(), average="macro") 
+            recall_value  = recall_score(test_feature, predictions.round(), average="macro") 
+            precision.append((precision_value))
+            recall.append((recall_value))
 
-    raw_data = {'Classifier':model_classifier,
-                'Preprocessing':model_normalization,
-                'Accuracy':top1,
-                'Top_3_accuracy':top3,
-                'Top_5_accuracy':top5,
-                'Top_10_accuracy':top10
+    raw_data = {'Classifier': model_classifier,
+                'Preprocessing': model_normalization,
+                'Accuracy': top1,
+                'Top_3_accuracy': top3,
+                'Top_5_accuracy': top5,
+                'Top_10_accuracy': top10,
+                'Precision' : precision,
+                'Recall': recall
+
                 }
-    df = pd.DataFrame(raw_data, columns = ['Classifier', 'Preprocessing', 'Accuracy', 'Top_3_accuracy', 'Top_5_accuracy', 'Top_10_accuracy'])
+    df = pd.DataFrame(raw_data, columns = ['Classifier', 'Preprocessing', 'Accuracy', 'Top_3_accuracy', 'Top_5_accuracy', 'Top_10_accuracy', 'Precision', 'Recall'])
     df.to_csv("example_classifier.csv")
 
 

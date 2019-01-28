@@ -3,13 +3,14 @@ from sklearn.ensemble import RandomForestClassifier
 from sklearn.gaussian_process import GaussianProcessClassifier
 from sklearn.gaussian_process.kernels import RBF
 from sklearn.neighbors import KNeighborsClassifier
+from sklearn.neural_network import MLPClassifier
 from sklearn import svm
 import numpy as np
+
 
 def split_data(data_tbl, features, test_size=0.2):
     """Return a tuple of length four with train data, test data, train feature, test feature."""
     return train_test_split(data_tbl, features, test_size=test_size)
-
 
 def train_model(data_tbl, features, method='random_forest', n_estimators=20, n_neighbours=21):
     """Return a trained model to predict features from data."""
@@ -20,8 +21,12 @@ def train_model(data_tbl, features, method='random_forest', n_estimators=20, n_n
         classifier = GaussianProcessClassifier(kernel=kernel_gpc, random_state=0)
     elif (method == "knn"):
         classifier = KNeighborsClassifier(n_neighbors=n_neighbours)
+    elif (method == "linear_svc"):
+        classifier = svm.SVC(kernel='linear', probability=True)
     elif (method == "svm"):
-        classifier = svm.SVC(kernel='linear',probability=True)
+        classifier = svm.SVC(gamma='scale', decision_function_shape='ovo', kernel="rbf", probability=True)
+    elif (method == "neural_network"):
+        classifier = MLPClassifier(solver='lbfgs', alpha=1e-5, hidden_layer_sizes=(5, 2))
     classifier.fit(data_tbl, features)
     return classifier
 

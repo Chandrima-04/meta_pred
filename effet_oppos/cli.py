@@ -1,3 +1,4 @@
+
 import pandas as pd
 import click
 from itertools import product
@@ -45,7 +46,7 @@ def main():
 def eval_one(test_size, num_estimators, num_neighbours, model_name, normalize_method, 
              feature_name, normalize_threshold, metadata_file, data_file):
     """Train and evaluate a model. Print the model results to stderr."""
-    raw_data = parse_raw_data(data_file)
+    raw_data, microbes = parse_raw_data(data_file)
     seed = randint(0, 1000)
     feature, name_map = parse_feature(metadata_file, raw_data.index, feature_name=feature_name)
     
@@ -56,7 +57,7 @@ def eval_one(test_size, num_estimators, num_neighbours, model_name, normalize_me
         normalized, feature, test_size=test_size, seed=seed
     )
     model = train_model(
-        train_data, train_feature, method=model_name,
+        train_data, train_feature, microbes, method=model_name,
         n_estimators=num_estimators, n_neighbours=num_neighbours
     )
     predictions = predict_with_model(model, test_data).round()
@@ -66,8 +67,6 @@ def eval_one(test_size, num_estimators, num_neighbours, model_name, normalize_me
 
     multiclass_prediction = multi_predict_with_model(model,test_data)
     click.echo(multiclass_prediction)
-
-
 
 @main.command('all')
 @click.option('--test-size', default=0.2, help='The relative size of the test data')
@@ -82,7 +81,7 @@ def eval_one(test_size, num_estimators, num_neighbours, model_name, normalize_me
 def eval_all(test_size, num_estimators, num_neighbours, feature_name, normalize_threshold,
              metadata_file, data_file, out_file):                
     """Evaluate all models and all normalizers."""
-    raw_data = parse_raw_data(data_file)
+    raw_data, microbes = parse_raw_data(data_file)
     feature, name_map = parse_feature(metadata_file, raw_data.index, feature_name=feature_name)
 
     tbl, seed = {}, randint(0, 1000)
@@ -96,7 +95,7 @@ def eval_all(test_size, num_estimators, num_neighbours, feature_name, normalize_
             normalized, feature, test_size=test_size, seed=seed
         )
         model = train_model(
-            train_data, train_feature, method=model_name,
+            train_data, train_feature, microbes, method=model_name,
             n_estimators=num_estimators, n_neighbours=num_neighbours
         )
         predictions = predict_with_model(model, test_data).round()

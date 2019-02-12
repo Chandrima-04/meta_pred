@@ -11,9 +11,10 @@ def parse_raw_data(filename):
     names, etc.
     """
     tbl = pd.read_csv(filename, index_col=0)
+    header = list(tbl.columns.values)
     tbl = tbl.fillna(0)
     new_tbl = tbl[tbl.sum(axis=1) != 0]
-    return new_tbl
+    return new_tbl, header
 
 
 def parse_feature(metadata_filename, sample_names, feature_name='city'):

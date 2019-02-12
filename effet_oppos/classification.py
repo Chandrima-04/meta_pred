@@ -7,13 +7,12 @@ from sklearn.neural_network import MLPClassifier
 from sklearn import svm
 import numpy as np
 
-
 def split_data(data_tbl, features, test_size=0.2, seed=None):
     """Return a tuple of length four with train data, test data, train feature, test feature."""
     return train_test_split(data_tbl, features, test_size=test_size, random_state=seed)
 
 
-def train_model(data_tbl, features, method='random_forest', n_estimators=20, n_neighbours=21):
+def train_model(data_tbl, features, microbes, method='random_forest', n_estimators=20, n_neighbours=21):
     """Return a trained model to predict features from data."""
     if (method == "random_forest"):
         classifier = RandomForestClassifier(n_estimators=n_estimators, random_state=0)
@@ -31,6 +30,12 @@ def train_model(data_tbl, features, method='random_forest', n_estimators=20, n_n
     elif (method == "neural_network"):
         classifier = MLPClassifier(solver='lbfgs', alpha=1e-5, hidden_layer_sizes=(5, 2))
     classifier.fit(data_tbl, features)
+    if(method=="random_forest"):
+        importances = classifier.feature_importances_
+        indices = np.argsort(importances)
+        for importance, microbe_names in zip(importances, microbes):
+            if (importance>0):
+                print (microbe_names, "=", importance)		
     return classifier
 
 

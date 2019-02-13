@@ -12,7 +12,7 @@ def split_data(data_tbl, features, test_size=0.2, seed=None):
     return train_test_split(data_tbl, features, test_size=test_size, random_state=seed)
 
 
-def train_model(data_tbl, features, microbes, method='random_forest', n_estimators=20, n_neighbours=21):
+def train_model(data_tbl, features, method='random_forest', n_estimators=20, n_neighbours=21):
     """Return a trained model to predict features from data."""
     if (method == "random_forest"):
         classifier = RandomForestClassifier(n_estimators=n_estimators, random_state=0)
@@ -29,13 +29,7 @@ def train_model(data_tbl, features, microbes, method='random_forest', n_estimato
         )
     elif (method == "neural_network"):
         classifier = MLPClassifier(solver='lbfgs', alpha=1e-5, hidden_layer_sizes=(5, 2))
-    classifier.fit(data_tbl, features)
-    if(method=="random_forest"):
-        importances = classifier.feature_importances_
-        indices = np.argsort(importances)
-        for importance, microbe_names in zip(importances, microbes):
-            if (importance>0):
-                print (microbe_names, "=", importance)		
+    classifier.fit(data_tbl, features)	
     return classifier
 
 
@@ -48,7 +42,6 @@ def multi_predict_with_model(model, data_tbl):
     """Return a dictionary with evaluation data for all the classes of the model on the data."""
     return model.predict_proba(data_tbl)
 
-
 def predict_top_classes(model, data_tbl, features, top_hits=[1, 2, 3, 5, 10]):
     prediction = multi_predict_with_model(model, data_tbl)
     hit_values = []
@@ -59,3 +52,10 @@ def predict_top_classes(model, data_tbl, features, top_hits=[1, 2, 3, 5, 10]):
             hits += 1 if val in top_n_hits[i] else 0
         hit_values.append(hits / len(features))
     return hit_values
+	
+def feature_importance(microbes, model):
+    importances = model.feature_importances_
+    feature_val = sorted(zip(microbes, importances), key=lambda x: x[1])
+    return feature_val
+
+	 

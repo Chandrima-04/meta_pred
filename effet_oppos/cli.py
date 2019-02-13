@@ -21,6 +21,7 @@ from .classification import (
     predict_with_model,
     multi_predict_with_model,
     predict_top_classes,
+    feature_importance,
 )
 
 MODEL_NAMES = ['random_forest', 'gaussian', 'knn', 'svm', 'linear_svc', 'neural_network']
@@ -57,9 +58,14 @@ def eval_one(test_size, num_estimators, num_neighbours, model_name, normalize_me
         normalized, feature, test_size=test_size, seed=seed
     )
     model = train_model(
-        train_data, train_feature, microbes, method=model_name,
+        train_data, train_feature, method=model_name,
         n_estimators=num_estimators, n_neighbours=num_neighbours
     )
+    if (model_name == 'random_forest'):
+            feature_list = feature_importance(microbes, model)
+            for microbes_name, values in feature_list:
+                if values > 0:
+                    click.echo("{}={}".format(microbes_name, values))
     predictions = predict_with_model(model, test_data).round()
     click.echo(confusion_matrix(test_feature, predictions.round()))
     click.echo(classification_report(test_feature, predictions.round()))
@@ -95,9 +101,15 @@ def eval_all(test_size, num_estimators, num_neighbours, feature_name, normalize_
             normalized, feature, test_size=test_size, seed=seed
         )
         model = train_model(
-            train_data, train_feature, microbes, method=model_name,
+            train_data, train_feature, method=model_name,
             n_estimators=num_estimators, n_neighbours=num_neighbours
         )
+        if (model_name == 'random_forest'):
+            feature_list = feature_importance(microbes, model)
+            for microbes_name, values in feature_list:
+                if values > 0:
+                    click.echo("{}={}".format(microbes_name, values))
+		
         predictions = predict_with_model(model, test_data).round()
 		
         model_results = predict_top_classes(model, test_data, test_feature)

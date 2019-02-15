@@ -7,7 +7,6 @@ from sklearn.neural_network import MLPClassifier
 from sklearn import svm
 import numpy as np
 
-
 def split_data(data_tbl, features, test_size=0.2, seed=None):
     """Return a tuple of length four with train data, test data, train feature, test feature."""
     return train_test_split(data_tbl, features, test_size=test_size, random_state=seed)
@@ -30,7 +29,7 @@ def train_model(data_tbl, features, method='random_forest', n_estimators=20, n_n
         )
     elif (method == "neural_network"):
         classifier = MLPClassifier(solver='lbfgs', alpha=1e-5, hidden_layer_sizes=(5, 2))
-    classifier.fit(data_tbl, features)
+    classifier.fit(data_tbl, features)	
     return classifier
 
 
@@ -43,7 +42,6 @@ def multi_predict_with_model(model, data_tbl):
     """Return a dictionary with evaluation data for all the classes of the model on the data."""
     return model.predict_proba(data_tbl)
 
-
 def predict_top_classes(model, data_tbl, features, top_hits=[1, 2, 3, 5, 10]):
     prediction = multi_predict_with_model(model, data_tbl)
     hit_values = []
@@ -54,3 +52,10 @@ def predict_top_classes(model, data_tbl, features, top_hits=[1, 2, 3, 5, 10]):
             hits += 1 if val in top_n_hits[i] else 0
         hit_values.append(hits / len(features))
     return hit_values
+	
+def feature_importance(microbes, model):
+    importances = model.feature_importances_
+    feature_val = sorted(zip(microbes, importances), key=lambda x: x[1])
+    return feature_val
+
+	 

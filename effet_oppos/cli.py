@@ -98,16 +98,18 @@ def eval_one(test_size, num_estimators, num_neighbours, model_name, normalize_me
     raw_data, microbes = parse_raw_data(data_file)
     seed = randint(0, 1000)
     feature, name_map = parse_feature(metadata_file, raw_data.index, feature_name=feature_name)
+    click.echo(feature)
+    click.echo(name_map)
     
     click.echo(f'Training {model_name} using {normalize_method} to predict {feature_name}',err=True)
     
-    normalized = normalize_data(raw_data, method=normalize_method, threshold=normalize_threshold)
-    train_data, test_data, train_feature, test_feature = split_data(
-        normalized, feature, test_size=test_size, seed=seed
-	)
-    
+    normalized = normalize_data(raw_data, method=normalize_method, threshold=normalize_threshold)    
     
     if(model_filename==None):
+	
+        train_data, test_data, train_feature, test_feature = split_data(
+            normalized, feature, test_size=test_size, seed=seed
+	    )
 
         model = train_model(
             train_data, train_feature, method=model_name,
@@ -115,7 +117,7 @@ def eval_one(test_size, num_estimators, num_neighbours, model_name, normalize_me
 	    )
 
     else:
-	
+        test_data = normalized
         model = joblib.load(model_filename)
     #if (model_name == 'random_forest'):
             #feature_list = feature_importance(microbes, model)
@@ -123,9 +125,11 @@ def eval_one(test_size, num_estimators, num_neighbours, model_name, normalize_me
                 #if values > 0:
                     #click.echo("{}={}".format(microbes_name, values))
     predictions = predict_with_model(model, test_data).round()
-    click.echo(confusion_matrix(test_feature, predictions.round()))
-    click.echo(classification_report(test_feature, predictions.round()))
-    click.echo(accuracy_score(test_feature, predictions.round()))
+    click.echo(predictions)
+    if(model_filename==None):
+        click.echo(confusion_matrix(test_feature, predictions.round()))
+        click.echo(classification_report(test_feature, predictions.round()))
+        click.echo(accuracy_score(test_feature, predictions.round()))
 
     multiclass_prediction = multi_predict_with_model(model,test_data)
     click.echo(multiclass_prediction)

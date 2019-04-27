@@ -1,3 +1,4 @@
+from sklearn.feature_selection import SelectKBest, chi2
 from sklearn.model_selection import train_test_split
 from sklearn.model_selection import KFold
 from sklearn.ensemble import RandomForestClassifier
@@ -59,7 +60,7 @@ def train_model(data_tbl, features, method='random_forest', n_estimators=20, n_n
         )
     elif (method == "neural_network"):
         classifier = MLPClassifier(solver='lbfgs', alpha=1e-5, hidden_layer_sizes=(5, 2))
-    classifier.fit(data_tbl, features)	
+    classifier.SelectKBest(chi2, k=1000).fit(data_tbl, features)	
     return classifier
 
 

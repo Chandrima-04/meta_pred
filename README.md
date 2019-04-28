@@ -14,7 +14,8 @@ Also, multiple classifier can be used to train the model, including
 - Bayesian Classifier: NBC (Gaussian)
 - SVM - Linear Support Vector Machine and Support Vector Machine
 - Nueral Network - Multi-layer Perceptron
-- Regression Methods - Linear Discriminant Analysis
+- Regression Methods - Linear Discriminant Analysis  
+
 Finally, the model is boosted using AdaBoost ensemble method
 
 ## Installation

@@ -8,12 +8,12 @@ Following preprocessing can be done:
 - binary: 0,1 based on a threshold.
 
 Also, multiple classifier can be used to train the model, including
-- Random Forest
-- KNN
-- Gaussian
-- Linear Support Vector Machine
-- Support Vector Machine
-- Multi-layer Perceptron. 
+- Tree Based Methods: Random Forest Classifier and Decision Tree Classifier
+- Clustering Methods: k-Nearest Neighbour
+- Bayesian Classifier: NBC (Gaussian)
+- SVM - Linear Support Vector Machine and Support Vector Machine
+- Nueral Network - Multi-layer Perceptron
+- Regression Methods - Linear Discriminant Analysis
 
 ## Installation
 

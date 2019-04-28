@@ -11,7 +11,7 @@ Also, multiple classifier can be used to train the model, including
 - Tree Based Methods: Decision Tree Classifier
 - Bagging (Bootstrap Aggregation): Random Forest Classifier and
 - k-Nearest Neighbour
-- Bayesian Classifier: NBC (Gaussian)
+- Bayesian Classifier: NBC and Gaussian
 - SVM - Linear Support Vector Machine and Support Vector Machine
 - Nueral Network - Multi-layer Perceptron
 - Regression Methods - Linear Discriminant Analysis  

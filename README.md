@@ -10,7 +10,7 @@ Following preprocessing can be done:
 Also, multiple classifier can be used to train the model, including
 - Tree Based Methods: Decision Tree Classifier
 - Bagging (Bootstrap Aggregation): Random Forest Classifier and
-- Clustering Methods: k-Nearest Neighbour
+- k-Nearest Neighbour
 - Bayesian Classifier: NBC (Gaussian)
 - SVM - Linear Support Vector Machine and Support Vector Machine
 - Nueral Network - Multi-layer Perceptron

@@ -25,7 +25,7 @@ from .classification import (
     feature_importance,
 )
 
-MODEL_NAMES = ['random_forest', 'gaussian', 'knn', 'svm', 'linear_svc', 'neural_network']
+MODEL_NAMES = ['random_forest', 'decision_tree', 'adaboost', 'gaussian', 'multinomialNB', 'knn', 'svm', 'linear_svc', 'neural_network', 'LDA']
 NORMALIZER_NAMES = ['raw', 'standard_scalar', 'total_sum', 'binary']
 
 
@@ -36,10 +36,12 @@ def main():
 @main.command('kfold')
 @click.option('--k-fold', default=5, help='The value of k for cross-validation')
 @click.option('--test-size', default=0.2, help='The relative size of the test data')
-@click.option('--num-estimators', default=20, help='Number of trees in our random forest')
+@click.option('--num-estimators', default=20, help='Number of trees in our random forest and/or adaboast')
 @click.option('--num-neighbours', default=21, help='Number of clusters in our knn')
+@click.option('--n-components', default=10, 
+              help='Number of components for dimensionality reduction in Linear Discriminant Analysis')
 @click.option('--model-name', default='random_forest', help='The model type to train')
-@click.option('--normalize-method', default='standard_scalar', help='Normalization method.')
+@click.option('--normalize-method', default='standard_scalar', help='Normalization method')
 @click.option('--feature-name', default='city', help='The feature to predict')
 @click.option('--normalize-threshold', default='0.0001',
               help='Normalization threshold for binary normalization.')
@@ -47,7 +49,7 @@ def main():
 @click.option('--model-filename', default="model_k.pkl", help='Filename to save Model')
 @click.argument('metadata_file', type=click.File('r'))
 @click.argument('data_file', type=click.File('r'))
-def kfold_cv(k_fold, test_size, num_estimators, num_neighbours, model_name, normalize_method, 
+def kfold_cv(k_fold, test_size, num_estimators, num_neighbours,  n_components, model_name, normalize_method, 
              feature_name, normalize_threshold, test_filename, model_filename, metadata_file, data_file):
     """Train and evaluate a model with k-fold cross-validation. Print the model results to stderr."""    
     raw_data, microbes = parse_raw_data(data_file)
@@ -65,7 +67,7 @@ def kfold_cv(k_fold, test_size, num_estimators, num_neighbours, model_name, norm
 	
     model = k_fold_crossvalid(
         split_train_data, split_train_feature, method=model_name, 
-        n_estimators=num_estimators, n_neighbours=num_neighbours, k_fold=k_fold
+        n_estimators=num_estimators, n_neighbours=num_neighbours, n_components=n_components, k_fold=k_fold
     )
 	
     click.echo("\n In here")
@@ -81,8 +83,10 @@ def kfold_cv(k_fold, test_size, num_estimators, num_neighbours, model_name, norm
 
 @main.command('one')
 @click.option('--test-size', default=0.2, help='The relative size of the test data')
-@click.option('--num-estimators', default=20, help='Number of trees in our random forest')
+@click.option('--num-estimators', default=20, help='Number of trees in our random forest and/or adaboast')
 @click.option('--num-neighbours', default=21, help='Number of clusters in our knn')
+@click.option('--n-components', default=10, 
+              help='Number of components for dimensionality reduction in Linear Discriminant Analysis')
 @click.option('--model-name', default='random_forest', help='The model type to train')
 @click.option('--normalize-method', default='standard_scalar', help='Normalization method.')
 @click.option('--feature-name', default='city', help='The feature to predict')
@@ -91,7 +95,7 @@ def kfold_cv(k_fold, test_size, num_estimators, num_neighbours, model_name, norm
 @click.option('--model-filename', default=None, help='Filename of previously saved model')
 @click.argument('metadata_file', type=click.File('r'))
 @click.argument('data_file', type=click.File('r'))
-def eval_one(test_size, num_estimators, num_neighbours, model_name, normalize_method, 
+def eval_one(test_size, num_estimators, num_neighbours, n_components, model_name, normalize_method, 
              feature_name, normalize_threshold, model_filename, metadata_file, data_file):
     """Train and evaluate a model. Print the model results to stderr."""
     
@@ -113,7 +117,7 @@ def eval_one(test_size, num_estimators, num_neighbours, model_name, normalize_me
 
         model = train_model(
             train_data, train_feature, method=model_name,
-            n_estimators=num_estimators, n_neighbours=num_neighbours
+            n_estimators=num_estimators, n_neighbours=num_neighbours, n_components=n_components
 	    )
 
     else:
@@ -136,15 +140,17 @@ def eval_one(test_size, num_estimators, num_neighbours, model_name, normalize_me
 
 @main.command('all')
 @click.option('--test-size', default=0.2, help='The relative size of the test data')
-@click.option('--num-estimators', default=20, help='Number of trees in our random forest')
+@click.option('--num-estimators', default=20, help='Number of trees in our random forest and/or adaboast')
 @click.option('--num-neighbours', default=21, help='Number of clusters in our knn') 
+@click.option('--n-components', default=10, 
+               help='Number of components for dimensionality reduction in Linear Discriminant Analysis')
 @click.option('--feature-name', default='city', help='The feature to predict')
 @click.option('--normalize-threshold', default='0.0001',
               help='Normalization threshold for binary normalization.')
 @click.argument('metadata_file', type=click.File('r'))
 @click.argument('data_file', type=click.File('r'))
 @click.argument('out_file', type=click.File('w'))
-def eval_all(test_size, num_estimators, num_neighbours, feature_name, normalize_threshold,
+def eval_all(test_size, num_estimators, num_neighbours, n_components, feature_name, normalize_threshold, 
              metadata_file, data_file, out_file):                
     """Evaluate all models and all normalizers."""
     raw_data, microbes = parse_raw_data(data_file)
@@ -162,7 +168,7 @@ def eval_all(test_size, num_estimators, num_neighbours, feature_name, normalize_
         )
         model = train_model(
             train_data, train_feature, method=model_name,
-            n_estimators=num_estimators, n_neighbours=num_neighbours
+            n_estimators=num_estimators, n_neighbours=num_neighbours, n_components=n_components
         )
         if (model_name == 'random_forest'):
             feature_list = feature_importance(microbes, model)

@@ -1,10 +1,11 @@
 from sklearn.model_selection import train_test_split
 from sklearn.model_selection import KFold
 from sklearn.ensemble import RandomForestClassifier
+from sklearn.ensemble import ExtraTreesClassifier
 from sklearn.tree import DecisionTreeClassifier
 from sklearn.ensemble import AdaBoostClassifier
 from sklearn.gaussian_process import GaussianProcessClassifier
-from sklearn.naive_bayes import MultinomialNB
+from sklearn.naive_bayes import GaussianNB
 from sklearn.gaussian_process.kernels import RBF
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.neural_network import MLPClassifier
@@ -20,13 +21,15 @@ def k_fold_crossvalid(data_tbl, features, method='random_forest', n_estimators=2
         classifier = RandomForestClassifier(n_estimators=n_estimators, random_state=0)
     elif (method == "decision_tree"):
         classifier = DecisionTreeClassifier(random_state=0)
+    elif (method == "extra_tree"):
+        classifier = ExtraTreesClassifier(n_estimators=n_estimators, criterion='entropy', random_state=0)
     elif (method == "adaboost"):
         classifier = AdaBoostClassifier(n_estimators=n_estimators, learning_rate=1)
     elif (method == "gaussian"):
         kernel_gpc = 1.0 * RBF(1.0)
         classifier = GaussianProcessClassifier(kernel=kernel_gpc, random_state=0)
-    elif (method == "multinomialNB"):
-        classifier = MultinomialNB(alpha=1.0)
+    elif (method == "gaussianNB"):
+        classifier = GaussianNB()
     elif (method == "knn"):
         classifier = KNeighborsClassifier(n_neighbors=n_neighbours)
     elif (method == "linear_svc"):
@@ -61,13 +64,15 @@ def train_model(data_tbl, features, method='random_forest', n_estimators=20, n_n
         classifier = RandomForestClassifier(n_estimators=n_estimators, random_state=0)
     elif (method == "decision_tree"):
         classifier = DecisionTreeClassifier(random_state=0)
+    elif (method == "extra_tree"):
+        classifier = ExtraTreesClassifier(n_estimators=n_estimators, criterion='entropy', random_state=0)
     elif (method == "adaboost"):
         classifier = AdaBoostClassifier(n_estimators=n_estimators, learning_rate=1)
     elif (method == "gaussian"):
         kernel_gpc = 1.0 * RBF(1.0)
         classifier = GaussianProcessClassifier(kernel=kernel_gpc, random_state=0)
-    elif (method == "multinomialNB"):
-        classifier = MultinomialNB(alpha=1.0)
+    elif (method == "gaussianNB"):
+        classifier = GaussianNB()
     elif (method == "knn"):
         classifier = KNeighborsClassifier(n_neighbors=n_neighbours)
     elif (method == "linear_svc"):

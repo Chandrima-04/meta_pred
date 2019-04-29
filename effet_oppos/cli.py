@@ -25,7 +25,7 @@ from .classification import (
     feature_importance,
 )
 
-MODEL_NAMES = ['random_forest', 'decision_tree', 'adaboost', 'gaussian', 'multinomialNB', 'knn', 'svm', 'linear_svc', 'neural_network', 'LDA']
+MODEL_NAMES = ['random_forest', 'decision_tree', 'extra_tree', 'adaboost', 'knn', 'LDA', 'neural_network', 'linear_svc', 'svm', 'gaussianNB']
 NORMALIZER_NAMES = ['raw', 'standard_scalar', 'total_sum', 'binary']
 
 
@@ -157,7 +157,7 @@ def eval_all(test_size, num_estimators, num_neighbours, n_components, feature_na
     feature, name_map = parse_feature(metadata_file, raw_data.index, feature_name=feature_name)
 
     tbl, seed = {}, randint(0, 1000)
-    for model_name, norm_name in product(MODEL_NAMES, NORMALIZER_NAMES):
+    for norm_name, model_name in product(NORMALIZER_NAMES, MODEL_NAMES):
         click.echo(
             f'Training {model_name} using {norm_name} to predict {feature_name}',
             err=True

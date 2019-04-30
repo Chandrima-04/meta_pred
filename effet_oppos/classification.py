@@ -63,7 +63,7 @@ def k_fold_crossvalid(data_tbl, features, method='random_forest', n_estimators=2
         scores.append(classifier.score(X_test, y_test))
         if classifier_score < classifier.score(X_test, y_test):
              X_train_best, X_test_best, y_train_best, y_test_best = X_train, X_test, y_train, y_test
-    return (classifier.fit(X_train_best, y_train_best), np.mean(scores))
+    return (classifier.fit(X_train_best, y_train_best), np.mean(scores), np.std(scores))
 
 
 def train_model(data_tbl, features, method='random_forest', n_estimators=20, n_neighbours=21, n_components=10):

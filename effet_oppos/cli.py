@@ -1,8 +1,8 @@
-from sklearn.externals import joblib
 import pandas as pd
+from random import randint
+from sklearn.externals import joblib
 import click
 from itertools import product
-from random import randint
 from sklearn.metrics import (
     precision_score,
     recall_score,
@@ -16,8 +16,9 @@ from .preprocessing import (
     normalize_data,
 )
 from .classification import (
-    k_fold_crossvalid,
     split_data,
+    get_classifier,
+	k_fold_crossvalid,
     train_model,
     predict_with_model,
     multi_predict_with_model,
@@ -25,9 +26,24 @@ from .classification import (
     feature_importance,
 )
 
-MODEL_NAMES = ['random_forest', 'decision_tree', 'extra_tree', 'adaboost', 'knn', 'LDA', 'neural_network', 'linear_svc', 'svm', 'gaussianNB']
-NORMALIZER_NAMES = ['raw', 'standard_scalar', 'total_sum', 'binary']
-
+MODEL_NAMES = [
+    'random_forest', 
+    'decision_tree', 
+    'extra_tree', 
+    'adaboost', 
+    'knn', 
+    'LDA', 
+    'neural_network', 
+    'gaussianNB', 
+    'linear_svc', 
+    'svm'
+]
+NORMALIZER_NAMES = [
+    'raw', 
+    'standard_scalar', 
+    'total_sum', 
+    'binary'
+]
 
 @click.group()
 def main():
@@ -65,12 +81,12 @@ def kfold_cv(k_fold, test_size, num_estimators, num_neighbours,  n_components, m
     #new_csv = pd.merge(left=split_test_data, right=split_test_feature, how='outer')
     #new_csv.to_csv(test_filename, index=False)
 	
-    model = k_fold_crossvalid(
+    model, mean_score, std_score = k_fold_crossvalid(
         split_train_data, split_train_feature, method=model_name, 
         n_estimators=num_estimators, n_neighbours=num_neighbours, n_components=n_components, k_fold=k_fold
     )
 	
-    click.echo("\n In here")
+    click.echo(f'Average cross-validation score {mean_score} and standard deviation {std_score}',err=True)
     joblib.dump(model, model_filename)
 
     predictions = predict_with_model(model, split_test_data).round()
@@ -78,8 +94,6 @@ def kfold_cv(k_fold, test_size, num_estimators, num_neighbours,  n_components, m
     click.echo(classification_report(split_test_feature, predictions.round()))
     click.echo(accuracy_score(split_test_feature, predictions.round()))
 
-    multiclass_prediction = multi_predict_with_model(model,split_test_data)
-    click.echo(multiclass_prediction)
 
 @main.command('one')
 @click.option('--test-size', default=0.2, help='The relative size of the test data')
@@ -109,34 +123,35 @@ def eval_one(test_size, num_estimators, num_neighbours, n_components, model_name
     
     normalized = normalize_data(raw_data, method=normalize_method, threshold=normalize_threshold)    
     
-    if(model_filename==None):
+    if model_filename==None:
 	
         train_data, test_data, train_feature, test_feature = split_data(
             normalized, feature, test_size=test_size, seed=seed
 	    )
-
+		
         model = train_model(
             train_data, train_feature, method=model_name,
             n_estimators=num_estimators, n_neighbours=num_neighbours, n_components=n_components
 	    )
+		
+       
 
     else:
         test_data = normalized
         model = joblib.load(model_filename)
-    #if (model_name == 'random_forest'):
-            #feature_list = feature_importance(microbes, model)
-            #for microbes_name, values in feature_list:
-                #if values > 0:
-                    #click.echo("{}={}".format(microbes_name, values))
+		
+    if model_name == 'random_forest':
+            feature_list = feature_importance(microbes, model)
+            for microbes_name, values in feature_list:
+                if values > 0:
+                    click.echo("{}={}".format(microbes_name, values))
+					
     predictions = predict_with_model(model, test_data).round()
     click.echo(predictions)
-    if(model_filename==None):
+    if model_filename==None:
         click.echo(confusion_matrix(test_feature, predictions.round()))
         click.echo(classification_report(test_feature, predictions.round()))
         click.echo(accuracy_score(test_feature, predictions.round()))
-
-    multiclass_prediction = multi_predict_with_model(model,test_data)
-    click.echo(multiclass_prediction)
 
 @main.command('all')
 @click.option('--test-size', default=0.2, help='The relative size of the test data')
@@ -157,7 +172,7 @@ def eval_all(test_size, num_estimators, num_neighbours, n_components, feature_na
     feature, name_map = parse_feature(metadata_file, raw_data.index, feature_name=feature_name)
 
     tbl, seed = {}, randint(0, 1000)
-    for norm_name, model_name in product(NORMALIZER_NAMES, MODEL_NAMES):
+    for model_name, norm_name in product(MODEL_NAMES, NORMALIZER_NAMES):
         click.echo(
             f'Training {model_name} using {norm_name} to predict {feature_name}',
             err=True
@@ -170,22 +185,17 @@ def eval_all(test_size, num_estimators, num_neighbours, n_components, feature_na
             train_data, train_feature, method=model_name,
             n_estimators=num_estimators, n_neighbours=num_neighbours, n_components=n_components
         )
-        if (model_name == 'random_forest'):
-            feature_list = feature_importance(microbes, model)
-            for microbes_name, values in feature_list:
-                if values > 0:
-                    click.echo("{}={}".format(microbes_name, values))
 		
         predictions = predict_with_model(model, test_data).round()
-		
+        
+        predictions2 = multi_predict_with_model(model, test_data).round()
         model_results = predict_top_classes(model, test_data, test_feature)
-        model_results.append(precision_score(test_feature, predictions, average="macro"))
-        model_results.append(recall_score(test_feature, predictions, average="macro"))
-        print(model_results)
+        model_results.append(precision_score(test_feature, predictions2, average="macro"))
+        model_results.append(recall_score(test_feature, predictions2, average="macro"))
         model_results.insert(0,norm_name);
         model_results.insert(0,model_name);
         tbl[str(model_name + ' ' + norm_name)] = model_results
-    print(tbl)
+		
     col_names = [
         'Classifier',
         'Preprocessing',
@@ -197,8 +207,10 @@ def eval_all(test_size, num_estimators, num_neighbours, n_components, feature_na
         'Precision',
         'Recall',
     ]
+	
     df = pd.DataFrame.from_dict(tbl, columns=col_names, orient='index')
     df.to_csv(out_file)
+	
 
 
 if __name__ == '__main__':

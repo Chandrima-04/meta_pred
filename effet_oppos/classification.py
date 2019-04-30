@@ -1,9 +1,14 @@
-from sklearn.model_selection import train_test_split
-from sklearn.model_selection import KFold
-from sklearn.ensemble import RandomForestClassifier
-from sklearn.ensemble import ExtraTreesClassifier
-from sklearn.tree import DecisionTreeClassifier
-from sklearn.ensemble import AdaBoostClassifier
+import numpy as np
+from sklearn.model_selection import (
+    train_test_split, 
+    KFold
+)
+from sklearn.ensemble import (
+    RandomForestClassifier, 
+    ExtraTreesClassifier, 
+    AdaBoostClassifier
+)
+from sklearn.tree import DecisionTreeClassifier 
 from sklearn.gaussian_process import GaussianProcessClassifier
 from sklearn.naive_bayes import GaussianNB
 from sklearn.gaussian_process.kernels import RBF
@@ -11,12 +16,12 @@ from sklearn.neighbors import KNeighborsClassifier
 from sklearn.neural_network import MLPClassifier
 from sklearn import svm 
 from sklearn.discriminant_analysis import LinearDiscriminantAnalysis
-import numpy as np
 
-def k_fold_crossvalid(data_tbl, features, method='random_forest', n_estimators=20, n_neighbours=21, n_components=10, k_fold=5):
-    """Return a model for saving."""
-    scores = []
-    classifier_score = 0
+def split_data(data_tbl, features, test_size=0.2, seed=None):
+    """Return a tuple of length four with train data, test data, train feature, test feature."""
+    return train_test_split(data_tbl, features, test_size=test_size, random_state=seed)
+
+def get_classifier(data_tbl, features, method='random_forest', n_estimators=20, n_neighbours=21, n_components=10):
     if (method == "random_forest"):
         classifier = RandomForestClassifier(n_estimators=n_estimators, random_state=0)
     elif (method == "decision_tree"):
@@ -42,7 +47,15 @@ def k_fold_crossvalid(data_tbl, features, method='random_forest', n_estimators=2
         classifier = MLPClassifier(solver='lbfgs', alpha=1e-5, hidden_layer_sizes=(5, 2))
     elif (method == "LDA"):
         classifier = LinearDiscriminantAnalysis(n_components=n_components)
-    cv = KFold(n_splits=k_fold, random_state=42, shuffle=False)
+    return classifier
+    
+
+def k_fold_crossvalid(data_tbl, features, method='random_forest', n_estimators=20, n_neighbours=21, n_components=10, k_fold=5):
+    """Return a model for saving."""
+    scores = []
+    classifier_score = 0
+    classifier = get_classifier(data_tbl, features, method=method, n_estimators=n_estimators, n_neighbours=n_neighbours, n_components=n_components)
+    cv = KFold(n_splits=k_fold, random_state=0, shuffle=False)
     for train_index, test_index in cv.split(data_tbl):
         X_train, X_test = data_tbl[train_index], data_tbl[test_index]
         y_train, y_test = features[train_index], features[test_index]
@@ -50,41 +63,12 @@ def k_fold_crossvalid(data_tbl, features, method='random_forest', n_estimators=2
         scores.append(classifier.score(X_test, y_test))
         if classifier_score < classifier.score(X_test, y_test):
              X_train_best, X_test_best, y_train_best, y_test_best = X_train, X_test, y_train, y_test
-    print(np.mean(scores))
-    return classifier.fit(X_train_best, y_train_best)
-
-def split_data(data_tbl, features, test_size=0.2, seed=None):
-    """Return a tuple of length four with train data, test data, train feature, test feature."""
-    return train_test_split(data_tbl, features, test_size=test_size, random_state=seed)
+    return (classifier.fit(X_train_best, y_train_best), np.mean(scores))
 
 
 def train_model(data_tbl, features, method='random_forest', n_estimators=20, n_neighbours=21, n_components=10):
     """Return a trained model to predict features from data."""
-    if (method == "random_forest"):
-        classifier = RandomForestClassifier(n_estimators=n_estimators, random_state=0)
-    elif (method == "decision_tree"):
-        classifier = DecisionTreeClassifier(random_state=0)
-    elif (method == "extra_tree"):
-        classifier = ExtraTreesClassifier(n_estimators=n_estimators, criterion='entropy', random_state=0)
-    elif (method == "adaboost"):
-        classifier = AdaBoostClassifier(n_estimators=n_estimators, learning_rate=1)
-    elif (method == "gaussian"):
-        kernel_gpc = 1.0 * RBF(1.0)
-        classifier = GaussianProcessClassifier(kernel=kernel_gpc, random_state=0)
-    elif (method == "gaussianNB"):
-        classifier = GaussianNB()
-    elif (method == "knn"):
-        classifier = KNeighborsClassifier(n_neighbors=n_neighbours)
-    elif (method == "linear_svc"):
-        classifier = svm.SVC(kernel='linear', probability=True)
-    elif (method == "svm"):
-        classifier = svm.SVC(
-            gamma='scale', decision_function_shape='ovo', kernel="rbf", probability=True
-        )
-    elif (method == "neural_network"):
-        classifier = MLPClassifier(solver='lbfgs', alpha=1e-5, hidden_layer_sizes=(5, 2))
-    elif (method == "LDA"):
-        classifier = LinearDiscriminantAnalysis(n_components=n_components)
+    classifier = get_classifier(data_tbl, features, method=method, n_estimators=n_estimators, n_neighbours=n_neighbours, n_components=n_components)
     classifier.fit(data_tbl, features)
     return classifier
 

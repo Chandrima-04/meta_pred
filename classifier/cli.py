@@ -1,4 +1,5 @@
 import pandas as pd
+import numpy as np 
 import os.path
 import click
 from random import randint
@@ -35,8 +36,8 @@ MODEL_NAMES = [
     'knn', 
     'LDA', 
     'neural_network', 
-    'gaussianNB', 
-    'linear_svc', 
+    'gaussianNB',
+    'linear_svc',
     'svm'
 ]
 NORMALIZER_NAMES = [
@@ -83,8 +84,7 @@ def kfold_cv(k_fold, test_size, num_estimators, num_neighbours,  n_components, m
     normalized = normalize_data(raw_data, method=normalize_method, threshold=normalize_threshold)
     split_train_data, split_test_data, split_train_feature, split_test_feature = split_data(
         normalized, feature, test_size=test_size, seed=seed
-    ) 
-	
+    )
     model, mean_score, std_score = k_fold_crossvalid(
         split_train_data, split_train_feature, method=model_name, 
         n_estimators=num_estimators, n_neighbours=num_neighbours, n_components=n_components, k_fold=k_fold, seed=seed
@@ -93,24 +93,35 @@ def kfold_cv(k_fold, test_size, num_estimators, num_neighbours,  n_components, m
     click.echo(f'Average cross-validation score {mean_score} and standard deviation {std_score}',err=True)
     joblib.dump(model, model_filename)
 
-    predictions = predict_with_model(model, split_test_data).round()
-    model_results = []
-    model_results.append(accuracy_score(split_test_feature, predictions.round()))
-    model_results.append(precision_score(split_test_feature, predictions, average="macro"))
-    model_results.append(recall_score(split_test_feature, predictions, average="macro"))
+    #Adding random noise
+    noise = np.random.normal(0,1,(split_test_data.shape[0], split_test_data.shape[1]))
+    test_data = split_test_data + noise
+	
+    for i in range(0,2):
+        if i == 0:
+            predictions = predict_with_model(model, split_test_data).round()
+            file_name = str(model_name + '_' + normalize_method)
+        else:
+            predictions = predict_with_model(model, test_data).round()
+            file_name = str(model_name + '_' + normalize_method + '_noisy')
+        model_results = []
+        model_results.append(accuracy_score(split_test_feature, predictions.round()))
+        model_results.append(precision_score(split_test_feature, predictions, average="macro"))
+        model_results.append(recall_score(split_test_feature, predictions, average="macro"))
+        tbl[file_name] = model_results
+		
+        conf_matrix = pd.DataFrame(confusion_matrix(split_test_feature, predictions.round()))
+        conf_matrix.to_csv(os.path.join(str(out_dir + '/' + 'confusion_matrix' + '/'), file_name  + "." + 'csv'))
+		
     col_names = [
         'Accuracy',
         'Precision',
         'Recall',
     ]
-    tbl[str(model_name + ' ' + normalize_method)] = model_results
+    
     out_metrics = pd.DataFrame.from_dict(tbl, columns=col_names, orient='index')
     out_metrics.to_csv(os.path.join(out_dir, str(model_name + '_' + normalize_method) + "." + 'csv'))
 	
-    conf_matrix = pd.DataFrame(confusion_matrix(split_test_feature, predictions.round()))
-    conf_matrix.to_csv(os.path.join(str(out_dir + '/' + 'confusion_matrix' + '/'), str(model_name + '_' + normalize_method) + "." + 'csv'))
-
-
 @main.command('one')
 @click.option('--test-size', default=0.2, help='The relative size of the test data')
 @click.option('--num-estimators', default=20, help='Number of trees in our random forest and/or adaboast')
@@ -156,7 +167,10 @@ def eval_one(test_size, num_estimators, num_neighbours, n_components, model_name
     else:
         test_data = normalized
         model = joblib.load(model_filename)
-					
+	
+    click.echo(train_feature)
+    click.echo(test_feature)	
+		
     predictions = predict_with_model(model, test_data).round()
 	
     conf_matrix = pd.DataFrame(confusion_matrix(test_feature, predictions.round()))
@@ -211,6 +225,7 @@ def eval_all(test_size, num_estimators, num_neighbours, n_components, feature_na
         train_data, test_data, train_feature, test_feature = split_data(
             normalized, feature, test_size=test_size, seed=seed
         )
+
         model = train_model(
             train_data, train_feature, method=model_name,
             n_estimators=num_estimators, n_neighbours=num_neighbours, n_components=n_components, seed=seed

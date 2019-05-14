@@ -87,11 +87,16 @@ def predict_top_classes(model, data_tbl, features):
     """Return the accuracy of the top-most important class."""
     prediction = multi_predict_with_model(model, data_tbl)
     hit_values = []
+    print(np.shape(prediction))
     for j in (1,2,3,5,10):
         top_n_hits = np.argsort(-prediction, axis=1)[:, :j]
         hits = 0
         for i, val in enumerate(features):
-            hits += 1 if (val+1) in top_n_hits[i] else 0
+            top_hits = top_n_hits[i]
+            if any( top_hits == -1 ): 
+                hits += 1 if (val + 1) in top_hits else 0
+            else:
+                hits += 1 if val in top_hits else 0
         hit_values.append(hits / len(features))
     return hit_values
 	

@@ -1,4 +1,4 @@
-# Effet Oppos
+# Classifiers
 
 The program helps to predict metagenomic signature of a city. It can be trained to use multiple classifier algorithm to predict the fingerprint.
 Following preprocessing can be done:

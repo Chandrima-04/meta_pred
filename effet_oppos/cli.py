@@ -247,11 +247,9 @@ def eval_all(test_size, num_estimators, num_neighbours, n_components, feature_na
         os.mkdir(str(out_dir + '/' + 'confusion_matrix'))
         os.mkdir(str(out_dir + '/' + 'pd_confusion_matrix'))
 	
-    click.echo(noisy)
     noise_data = [0]	
-    if noisy==True:
+    if noisy=='True':
         noise_data = NOISE_VALUES
-    click.echo(noise_data)
 
     tbl, seed = {}, randint(0, 1000)
     for model_name, norm_name in product(MODEL_NAMES, NORMALIZER_NAMES):
@@ -265,6 +263,8 @@ def eval_all(test_size, num_estimators, num_neighbours, n_components, feature_na
         )
 		
         for i in noise_data:
+		
+            click.echo(f'Gaussian noise {i} has been added',err=True)
 		
             # Adding noise to train data to check for over-fitting 
             train_noise = np.random.normal(0, i,(train_data.shape[0], train_data.shape[1]))
@@ -287,7 +287,7 @@ def eval_all(test_size, num_estimators, num_neighbours, n_components, feature_na
             conf_matrix.to_csv(os.path.join(str(out_dir + '/' + 'confusion_matrix' + '/'), str(model_name + '_' + norm_name + '_' + str(i)) + "." + 'csv'))
             CV_table = pd.crosstab(name_map[test_feature], name_map[predictions], rownames=['Actual ' + feature_name], colnames=['Predicted ' + feature_name])
             CV_table.to_csv(os.path.join(str(out_dir + '/' + 'pd_confusion_matrix' + '/'), str(model_name + '_' + norm_name + '_' + str(i)) + "." + 'csv'))
-            click.echo(classification_report(test_feature, predictions))
+            
 		
     col_names = [
         'Classifier',

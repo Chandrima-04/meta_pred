@@ -113,17 +113,13 @@ def kfold_cv(k_fold, test_size, num_estimators, num_neighbours,  n_components, m
     click.echo(f'Average cross-validation score {mean_score} and standard deviation {std_score}',err=True)
     joblib.dump(model, model_filename)
 
-    #Adding random noise to test data
-    test_noise = np.random.normal(0,1,(split_test_data.shape[0], split_test_data.shape[1]))
-    test_data = split_test_data + test_noise
-	
-	
+ 
     for i in range(0,2):
         if i == 0:
             predictions = predict_with_model(model, split_test_data).round()
             file_name = str(model_name + '_' + normalize_method)
         else:
-            predictions = predict_with_model(model, test_data).round()
+            predictions = predict_with_model(model, split_test_data).round()
             file_name = str(model_name + '_' + normalize_method + '_noisy')
         model_results = []
         model_results.append(accuracy_score(split_test_feature, predictions.round()))
@@ -170,8 +166,10 @@ def eval_one(test_size, num_estimators, num_neighbours, n_components, model_name
     if not os.path.exists(out_dir):
         os.mkdir(out_dir)
         os.mkdir(str(out_dir + '/' + 'confusion_matrix'))
+        os.mkdir(str(out_dir + '/' + 'classification_report'))
     else:
-        os.mkdir(str(out_dir + '/' + 'confusion_matrix'))   
+        os.mkdir(str(out_dir + '/' + 'confusion_matrix')) 
+        os.mkdir(str(out_dir + '/' + 'classification_report'))		
     
     if model_filename==None:
         new_index = feature!= -1
@@ -196,11 +194,11 @@ def eval_one(test_size, num_estimators, num_neighbours, n_components, model_name
 	
     conf_matrix = pd.DataFrame(confusion_matrix(test_feature, predictions.round()))
     conf_matrix.to_csv(os.path.join(str(out_dir + '/' + 'confusion_matrix' + '/'), str(model_name + '_' + normalize_method) + "." + 'csv'))
-	
+    
     model_results = []
     model_results.append(accuracy_score(test_feature, predictions.round()))
-    model_results.append(precision_score(test_feature, predictions, average="macro"))
-    model_results.append(recall_score(test_feature, predictions, average="macro"))
+    model_results.append(precision_score(test_feature, predictions, average="micro"))
+    model_results.append(recall_score(test_feature, predictions, average="micro"))
     col_names = [
         'Accuracy',
         'Precision',
@@ -210,15 +208,13 @@ def eval_one(test_size, num_estimators, num_neighbours, n_components, model_name
     out_metrics = pd.DataFrame.from_dict(tbl, columns=col_names, orient='index')
     out_metrics.to_csv(os.path.join(out_dir, str(model_name + '_' + normalize_method) + "." + 'csv'))
 	
-    conf_matrix = pd.DataFrame(confusion_matrix(test_feature, predictions.round()))
-    conf_matrix.to_csv(os.path.join(str(out_dir + '/' + 'confusion_matrix' + '/'), str(model_name + '_' + normalize_method) + "." + 'csv'))
 	
-    if model_name == 'random_forest':
-        val = 0
-        feature_list = feature_importance(microbes, model)
-        for microbes_name, values in feature_list:
+    #if model_name == 'random_forest':
+    #   val = 0
+    #    feature_list = feature_importance(microbes, model)
+    #    for microbes_name, values in feature_list:
             #if val < 100:
-            click.echo("{}={}".format(microbes_name, values))
+    #        click.echo("{}={}".format(microbes_name, values))
             #val +=1
 
 @main.command('all')
@@ -250,6 +246,12 @@ def eval_all(test_size, num_estimators, num_neighbours, n_components, feature_na
     else:
         os.mkdir(str(out_dir + '/' + 'confusion_matrix'))
         os.mkdir(str(out_dir + '/' + 'pd_confusion_matrix'))
+	
+    click.echo(noisy)
+    noise_data = [0]	
+    if noisy==True:
+        noise_data = NOISE_VALUES
+    click.echo(noise_data)
 
     tbl, seed = {}, randint(0, 1000)
     for model_name, norm_name in product(MODEL_NAMES, NORMALIZER_NAMES):
@@ -262,10 +264,6 @@ def eval_all(test_size, num_estimators, num_neighbours, n_components, feature_na
             normalized, feature, test_size=test_size, seed=seed
         )
 		
-        if (noisy==True):
-            noise_data = NOISE_VALUES
-        else:
-            noise_data = [0]
         for i in noise_data:
 		
             # Adding noise to train data to check for over-fitting 
@@ -279,8 +277,8 @@ def eval_all(test_size, num_estimators, num_neighbours, n_components, feature_na
             
             predictions = predict_with_model(model, test_data).round()
             model_results = predict_top_classes(model, test_data, test_feature)
-            model_results.append(precision_score(test_feature, predictions, average="macro"))
-            model_results.append(recall_score(test_feature, predictions, average="macro"))
+            model_results.append(precision_score(test_feature, predictions, average="micro"))
+            model_results.append(recall_score(test_feature, predictions, average="micro"))
             model_results.insert(0,i);
             model_results.insert(0,norm_name);
             model_results.insert(0,model_name);
@@ -289,6 +287,7 @@ def eval_all(test_size, num_estimators, num_neighbours, n_components, feature_na
             conf_matrix.to_csv(os.path.join(str(out_dir + '/' + 'confusion_matrix' + '/'), str(model_name + '_' + norm_name + '_' + str(i)) + "." + 'csv'))
             CV_table = pd.crosstab(name_map[test_feature], name_map[predictions], rownames=['Actual ' + feature_name], colnames=['Predicted ' + feature_name])
             CV_table.to_csv(os.path.join(str(out_dir + '/' + 'pd_confusion_matrix' + '/'), str(model_name + '_' + norm_name + '_' + str(i)) + "." + 'csv'))
+            click.echo(classification_report(test_feature, predictions))
 		
     col_names = [
         'Classifier',
@@ -306,8 +305,6 @@ def eval_all(test_size, num_estimators, num_neighbours, n_components, feature_na
     out_metrics = pd.DataFrame.from_dict(tbl, columns=col_names, orient='index')
     out_metrics.to_csv(os.path.join(out_dir, 'output_metrics' + "." + 'csv'))
 	
-	
-
 
 if __name__ == '__main__':
     main()

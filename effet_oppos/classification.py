@@ -57,9 +57,11 @@ def k_fold_crossvalid(data_tbl, features, method='random_forest', n_estimators=2
     classifier_score = 0
     classifier = get_classifier(data_tbl, features, method=method, n_estimators=n_estimators, n_neighbours=n_neighbours, n_components=n_components, seed=None)
     cv = KFold(n_splits=k_fold, random_state=seed, shuffle=False)
-    for train_index, test_index in cv.split(data_tbl):
-        X_train, X_test = data_tbl[train_index], data_tbl[test_index]
-        y_train, y_test = features[train_index], features[test_index]
+    X = np.array(data_tbl)
+    y = np.array(features)
+    for train_index, test_index in cv.split(X, y):
+        X_train, X_test = X[train_index], X[test_index]
+        y_train, y_test = y[train_index], y[test_index]
         classifier.fit(X_train, y_train)
         scores.append(classifier.score(X_test, y_test))
         if classifier_score < classifier.score(X_test, y_test):

@@ -123,8 +123,8 @@ def kfold_cv(k_fold, test_size, num_estimators, num_neighbours,  n_components, m
             file_name = str(model_name + '_' + normalize_method + '_noisy')
         model_results = []
         model_results.append(accuracy_score(split_test_feature, predictions.round()))
-        model_results.append(precision_score(split_test_feature, predictions, average="macro"))
-        model_results.append(recall_score(split_test_feature, predictions, average="macro"))
+        model_results.append(precision_score(split_test_feature, predictions, average="micro"))
+        model_results.append(recall_score(split_test_feature, predictions, average="micro"))
         tbl[file_name] = model_results
 		
         conf_matrix = pd.DataFrame(confusion_matrix(split_test_feature, predictions.round()))

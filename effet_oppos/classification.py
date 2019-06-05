@@ -91,12 +91,16 @@ def predict_top_classes(model, data_tbl, features):
         top_n_hits = np.argsort(-prediction, axis=1)[:, :j]
         hits = 0
         for i, val in enumerate(features):
-            hits += 1 if (val+1) in top_n_hits[i] else 0
+            top_hits = top_n_hits[i]
+            if any( top_hits == -1 ): 
+                hits += 1 if (val + 1) in top_hits else 0
+            else:
+                hits += 1 if val in top_hits else 0
         hit_values.append(hits / len(features))
     return hit_values
 	
 def feature_importance(microbes, model):
     """Return the top features of importance as selected by Random Forest Classifier."""
     importances = model.feature_importances_
-    feature_val = sorted(zip(microbes, importances), key=lambda x: x[1])
+    feature_val = sorted(zip(microbes, importances), key=lambda x: x[1], reverse=True)
     return feature_val

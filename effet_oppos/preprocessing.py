@@ -30,7 +30,6 @@ def parse_feature(metadata_filename, sample_names, feature_name='city'):
 
 def normalize_data(data_tbl, method='standard_scalar',threshold=0.0001):
     """Return a pandas dataframe ready for classification.
-
     Normalize/preprocess the dataset according to the
     specified method.
     """

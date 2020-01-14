@@ -1,6 +1,14 @@
 import pandas as pd
 from sklearn.preprocessing import StandardScaler
 
+def total_preprocessing(data_file, metadata_file, feature_name):
+    """Return normalized dataframe and feature list after preprocessing"""
+    raw_data, microbes = parse_raw_data(data_file)
+    feature, name_map = parse_feature(metadata_file, raw_data.index, feature_name)    
+    new_index = feature!= -1
+    raw_data = raw_data[new_index == True]
+    feature = feature[new_index == True]
+    return raw_data, name_map, feature, microbes
 
 def parse_raw_data(filename):
     """Return a pandas dataframe containing the raw data to classify.
@@ -12,7 +20,26 @@ def parse_raw_data(filename):
     header = list(tbl.columns.values)
     tbl = tbl.fillna(0)
     new_tbl = tbl[tbl.sum(axis=1) != 0]
+    new_tbl = new_tbl.reindex(sorted(new_tbl.columns), axis=1)
     return new_tbl, header
+	
+def parse_test_data(filename, microbes):
+    """Return a pandas dataframe containing the raw data to classify.
+    Data points should be in rows, features in columns. This function
+    formats the dataframe to have same features as train-set.
+    """
+    tbl = pd.read_csv(filename, index_col=0)
+    header = list(tbl.columns.values)
+    for col in tbl.columns: 
+        if col not in microbes: 
+            del tbl[col] 
+    for column_name in microbes:
+        if column_name not in header:
+            tbl[column_name] = 0
+    tbl = tbl.fillna(0)
+    new_tbl = tbl[tbl.sum(axis=1) != 0]
+    new_tbl = new_tbl.reindex(sorted(new_tbl.columns), axis=1)
+    return new_tbl
 
 
 def parse_feature(metadata_filename, sample_names, feature_name='city'):
@@ -22,7 +49,7 @@ def parse_feature(metadata_filename, sample_names, feature_name='city'):
     metadata = pd.read_csv(metadata_filename, index_col=0)
     metadata = metadata.loc[sample_names]
     feature = metadata[feature_name]
-    factorized, name_map = pd.factorize(feature)
+    factorized, name_map = pd.factorize(feature, sort=True)
     return factorized, name_map
 
 def parse_group_feature(metadata_filename, sample_names, feature_name='continent', group_name='city'):
@@ -33,8 +60,8 @@ def parse_group_feature(metadata_filename, sample_names, feature_name='continent
     metadata = metadata.loc[sample_names]
     feature = metadata[feature_name]
     group = metadata[group_name]
-    factorized, name_map = pd.factorize(feature)
-    group_factorized, group_map = pd.factorize(group)
+    factorized, name_map = pd.factorize(feature, sort=True)
+    group_factorized, group_map = pd.factorize(group, sort=True)
     return factorized, name_map, group_factorized, group_map
 
 def normalize_data(data_tbl, method='standard_scalar',threshold=0.0001):

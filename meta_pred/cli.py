@@ -13,6 +13,8 @@ from sklearn.metrics import (
     accuracy_score,
 )
 from .preprocessing import (
+    total_preprocessing,
+    parse_test_data,
     parse_raw_data,
     parse_feature,
     parse_group_feature,
@@ -21,7 +23,7 @@ from .preprocessing import (
 from .classification import (
     split_data,
     get_classifier,
-	k_fold_crossvalid,
+    k_fold_crossvalid,
     leave_one_group_out,
     train_model,
     predict_with_model,
@@ -71,6 +73,7 @@ NOISE_VALUES = [
 def main():
     pass
 
+
 @main.command('kfold')
 @click.option('--k-fold', default=5, help='The value of k for cross-validation')
 @click.option('--test-size', default=0.2, help='The relative size of the test data')
@@ -91,18 +94,14 @@ def main():
 def kfold_cv(k_fold, test_size, num_estimators, num_neighbours,  n_components, model_name, normalize_method, 
              feature_name, normalize_threshold, test_filename, model_filename, metadata_file, data_file, out_dir):
     """Train and evaluate a model with k-fold cross-validation. echo the model results to stderr."""    
-    raw_data, microbes = parse_raw_data(data_file)
     tbl, seed = {}, randint(0, 1000)
-    feature, name_map = parse_feature(metadata_file, raw_data.index, feature_name=feature_name)    
+    raw_data, name_map, feature, microbes = total_preprocessing(data_file, metadata_file, feature_name=feature_name)
     click.echo(f'Training {model_name} using {normalize_method} to predict {feature_name}',err=True)
     if not os.path.exists(out_dir):
         os.mkdir(out_dir)
         os.mkdir(str(out_dir + '/' + 'confusion_matrix'))
     else:
         os.mkdir(str(out_dir + '/' + 'confusion_matrix'))
-    new_index = feature!= -1
-    raw_data = raw_data[new_index == True]
-    feature = feature[new_index == True]
     normalized = normalize_data(raw_data, method=normalize_method, threshold=normalize_threshold)
     split_train_data, split_test_data, split_train_feature, split_test_feature = split_data(
         normalized, feature, test_size=test_size, seed=seed
@@ -153,30 +152,26 @@ def kfold_cv(k_fold, test_size, num_estimators, num_neighbours,  n_components, m
 @click.option('--normalize-threshold', default='0.0001',
               help='Normalization threshold for binary normalization.')
 @click.option('--model-filename', default=None, help='Filename of previously saved model')
+@click.option('--pred-feature-name', default='city', help='The feature predicted')
 @click.argument('metadata_file', type=click.File('r'))
 @click.argument('data_file', type=click.File('r'))
+@click.argument('pred_metadata_file', type=click.File('r'))
+@click.argument('pred_file', type=click.File('r'))
 @click.argument('out_dir')
-def eval_one(test_size, num_estimators, num_neighbours, n_components, model_name, normalize_method, 
-             feature_name, normalize_threshold, model_filename, metadata_file, data_file, out_dir):
+def eval_one(test_size, num_estimators, num_neighbours, n_components, model_name, normalize_method, feature_name, normalize_threshold, 
+             model_filename, pred_feature_name, metadata_file, data_file, pred_metadata_file, pred_file, out_dir):
     """Train and evaluate a model. Print the model results to stderr."""
     
-    raw_data, microbes = parse_raw_data(data_file)
     tbl, seed = {}, randint(0, 1000)
-    feature, name_map = parse_feature(metadata_file, raw_data.index, feature_name=feature_name)
-	
     click.echo(f'Training {model_name} using {normalize_method} to predict {feature_name}',err=True)
     if not os.path.exists(out_dir):
         os.mkdir(out_dir)
-        os.mkdir(str(out_dir + '/' + 'confusion_matrix'))
-        os.mkdir(str(out_dir + '/' + 'classification_report'))
-    else:
-        os.mkdir(str(out_dir + '/' + 'confusion_matrix')) 
-        os.mkdir(str(out_dir + '/' + 'classification_report'))		
+    os.mkdir(str(out_dir + '/' + 'original_confusion_matrix'))
+    os.mkdir(str(out_dir + '/' + 'classification_report'))
+    	
     
     if model_filename==None:
-        new_index = feature!= -1
-        raw_data = raw_data[new_index == True]
-        feature = feature[new_index == True]
+        raw_data, name_map, feature, microbes = total_preprocessing(data_file, metadata_file, feature_name=feature_name)
         normalized = normalize_data(raw_data, method=normalize_method, threshold=normalize_threshold) 
         train_data, test_data, train_feature, test_feature = split_data(
             normalized, feature, test_size=test_size, seed=seed
@@ -188,6 +183,7 @@ def eval_one(test_size, num_estimators, num_neighbours, n_components, model_name
 	    )    
 
     else:
+        raw_data, microbes = parse_raw_data(data_file)
         normalized = normalize_data(raw_data, method=normalize_method, threshold=normalize_threshold) 
         test_data = normalized
         model = joblib.load(model_filename)
@@ -195,7 +191,7 @@ def eval_one(test_size, num_estimators, num_neighbours, n_components, model_name
     predictions = predict_with_model(model, test_data).round()
 	
     conf_matrix = pd.DataFrame(confusion_matrix(test_feature, predictions.round()))
-    conf_matrix.to_csv(os.path.join(str(out_dir + '/' + 'confusion_matrix' + '/'), str(model_name + '_' + normalize_method) + "." + 'csv'))
+    conf_matrix.to_csv(os.path.join(str(out_dir + '/' + 'original_confusion_matrix' + '/'), str(model_name + '_' + normalize_method) + '.csv'))
     
     model_results = []
     model_results.append(accuracy_score(test_feature, predictions.round()))
@@ -210,6 +206,22 @@ def eval_one(test_size, num_estimators, num_neighbours, n_components, model_name
     out_metrics = pd.DataFrame.from_dict(tbl, columns=col_names, orient='index')
     out_metrics.to_csv(os.path.join(out_dir, str(model_name + '_' + normalize_method) + "." + 'csv'))
 	
+    prediction_file = parse_test_data(pred_file, microbes)
+    pred_feature, pred_name_map = parse_feature(pred_metadata_file, prediction_file.index, pred_feature_name)   
+    normalized_pred = normalize_data(prediction_file, method=normalize_method, threshold=normalize_threshold) 
+    predictions = pd.Series(predict_with_model(model, normalized_pred).round())
+    dict_name_map = { i : name_map.tolist()[i] for i in range(0, len(name_map.tolist()) ) }
+    dict_pred_name_map = { i : pred_name_map.tolist()[i] for i in range(0, len(pred_name_map.tolist()) ) }
+    #pred_out = []
+    #pred_out.append(predictions.map(dict_name_map))
+    #pred_out.append(pd.Series(pred_feature).map(dict_pred_name_map))
+    #tbl[]
+    #print (pred_out)
+    out_metrics = pd.DataFrame(zip(predictions.map(dict_name_map), pd.Series(pred_feature).map(dict_pred_name_map)),
+                               columns= ['Predicted Value', 'Actual Value'])
+    out_metrics.index = prediction_file.index
+    out_metrics.to_csv(os.path.join(out_dir, 'predictions.csv'))
+    
 	
     #if model_name == 'random_forest':
     #   val = 0
@@ -235,11 +247,7 @@ def eval_one(test_size, num_estimators, num_neighbours, n_components, model_name
 def eval_all(test_size, num_estimators, num_neighbours, n_components, feature_name, normalize_threshold, noisy, 
              metadata_file, data_file, out_dir):                
     """Evaluate all models and all normalizers."""
-    raw_data, microbes = parse_raw_data(data_file)
-    feature, name_map = parse_feature(metadata_file, raw_data.index, feature_name=feature_name)
-    new_index = feature!= -1
-    raw_data = raw_data[new_index == True]
-    feature = feature[new_index == True]
+    raw_data, name_map, feature, microbes = total_preprocessing(data_file, metadata_file, feature_name=feature_name)
 	
     if not os.path.exists(out_dir):
         os.mkdir(out_dir)
@@ -328,7 +336,8 @@ def leave_one(num_estimators, num_neighbours,  n_components, model_name, normali
     raw_data, microbes = parse_raw_data(data_file)
     tbl, seed = {}, randint(0, 1000)
      
-    feature, name_map, group_feature, group_map = parse_group_feature(metadata_file, raw_data.index, feature_name=feature_name, group_name=group_name) 
+    feature, name_map, group_feature, group_map = parse_group_feature(metadata_file, raw_data.index, 
+	                                                                  feature_name=feature_name, group_name=group_name) 
     
     click.echo(f'Training {model_name} using {normalize_method} to predict {feature_name}',err=True)
     if not os.path.exists(out_dir):

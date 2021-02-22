@@ -10,7 +10,7 @@ requirements = [
 
 
 setuptools.setup(
-    name="Effet Oppos",
+    name="meta_pred",
     version="0.1.0",
     url="https://github.com/Chandrima-04/effet_oppos",
     author="Chandrima Bhattacharya",

@@ -21,7 +21,7 @@ Also, multiple classifier can be used to train the model, including
 
 From source
 ```
-git clone git@github.com:Chandrima-04/meta_pred.git
+git clone https://github.com/Chandrima-04/meta_pred.git
 cd meta_pred
 python setup.py install
 ```

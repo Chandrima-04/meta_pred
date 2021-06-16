@@ -1,21 +1,22 @@
 import numpy as np
 from sklearn.model_selection import (
-    train_test_split, 
+    train_test_split,
     KFold,
-    LeaveOneGroupOut 
+    LeaveOneGroupOut
 )
 from sklearn.ensemble import (
-    RandomForestClassifier, 
-    ExtraTreesClassifier, 
+    RandomForestClassifier,
+    ExtraTreesClassifier,
     AdaBoostClassifier
 )
-from sklearn.tree import DecisionTreeClassifier 
+from sklearn import svm
+from sklearn.linear_model import LogisticRegression
+from sklearn.tree import DecisionTreeClassifier
 from sklearn.gaussian_process import GaussianProcessClassifier
 from sklearn.naive_bayes import GaussianNB
 from sklearn.gaussian_process.kernels import RBF
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.neural_network import MLPClassifier
-from sklearn import svm 
 from sklearn.discriminant_analysis import LinearDiscriminantAnalysis
 
 def split_data(data_tbl, features, test_size=0.2, seed=None):
@@ -45,12 +46,14 @@ def get_classifier(data_tbl, features, method='random_forest', n_estimators=20, 
         classifier = svm.SVC(
             gamma='scale', decision_function_shape='ovo', kernel="rbf", probability=True
         )
+    elif method == "logistic_regression":
+        classifier = LogisticRegression(solver='lbfgs', C=1e5, max_iter= 10000)
     elif method == "neural_network":
-        classifier = MLPClassifier(solver='lbfgs', alpha=1e-5, hidden_layer_sizes=(5, 2))
+        classifier = MLPClassifier(solver='lbfgs', alpha=1e-5, hidden_layer_sizes=(5, 2), max_iter= 10000)
     elif method == "LDA":
         classifier = LinearDiscriminantAnalysis(n_components=n_components)
     return classifier
-    
+
 
 def k_fold_crossvalid(data_tbl, features, method='random_forest', n_estimators=20, n_neighbours=21, n_components=10, k_fold=5, seed=None):
     """Return a model for saving after training using k-fold cross-validation."""
@@ -66,7 +69,7 @@ def k_fold_crossvalid(data_tbl, features, method='random_forest', n_estimators=2
         if classifier_score < classifier.score(X_test, y_test):
              X_train_best, X_test_best, y_train_best, y_test_best = X_train, X_test, y_train, y_test
     return (classifier.fit(X_train_best, y_train_best), np.mean(scores), np.std(scores))
-	
+
 def leave_one_group_out(data_tbl, features, group_name, method='random_forest', n_estimators=20, n_neighbours=21, n_components=10, seed=None):
     scores = []
     classifier_score = 0
@@ -107,13 +110,13 @@ def predict_top_classes(model, data_tbl, features):
         hits = 0
         for i, val in enumerate(features):
             top_hits = top_n_hits[i]
-            if any( top_hits == -1 ): 
+            if any( top_hits == -1 ):
                 hits += 1 if (val + 1) in top_hits else 0
             else:
                 hits += 1 if val in top_hits else 0
         hit_values.append(hits / len(features))
     return hit_values
-	
+
 def feature_importance(microbes, model):
     """Return the top features of importance as selected by Random Forest Classifier."""
     importances = model.feature_importances_

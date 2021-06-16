@@ -1,6 +1,28 @@
 import pandas as pd
 from sklearn.preprocessing import StandardScaler
 
+def feature_extraction(data, metadata_file, feature_name):
+    """Return multiple dataframe with raw_data and features"""
+    raw_data, microbes = parse_raw_data(data)
+    feature, name_map = parse_feature(metadata_file, raw_data.index,
+                        feature_name=feature_name)
+    new_index = feature!= -1
+    raw_data = raw_data[new_index == True]
+    feature = feature[new_index == True]
+    return raw_data, microbes, feature, name_map
+
+def group_feature_extraction(data, metadata_file, feature_name, group_name):
+    """Return multiple dataframe with raw_data and features and group"""
+    raw_data, microbes = parse_raw_data(data)
+    feature, name_map, group_feature, group_map = parse_group_feature(metadata_file,
+                raw_data.index, feature_name=feature_name, group_name=group_name)
+    new_index = feature!= -1
+    raw_data = raw_data[new_index == True]
+    feature = feature[new_index == True]
+    group_feature = group_feature[new_index == True]
+    return raw_data, microbes, feature, name_map, group_feature, group_map
+
+
 
 def parse_raw_data(filename):
     """Return a pandas dataframe containing the raw data to classify.
@@ -20,7 +42,7 @@ def parse_feature(metadata_filename, sample_names, feature_name='city'):
     from factor values to feature names.
     """
     metadata = pd.read_csv(metadata_filename, index_col=0)
-    metadata = metadata.loc[sample_names]
+    metadata = metadata.reindex(sample_names)
     feature = metadata[feature_name]
     factorized, name_map = pd.factorize(feature)
     return factorized, name_map
@@ -30,7 +52,7 @@ def parse_group_feature(metadata_filename, sample_names, feature_name='continent
     from factor values to feature names.
     """
     metadata = pd.read_csv(metadata_filename, index_col=0)
-    metadata = metadata.loc[sample_names]
+    metadata = metadata.reindex(sample_names)
     feature = metadata[feature_name]
     group = metadata[group_name]
     factorized, name_map = pd.factorize(feature)

@@ -1,4 +1,4 @@
-# Classifiers
+# Meta_Pred
 
 The program helps to predict metagenomic signature of an environment. An microbial environment can include a variety of ecologies (extreme environment, build environment, natural environment, etc) as well as host environment (human, animal, fungi,  plant, etc). It can be trained to use multiple classifier algorithm to predict the fingerprint.
 

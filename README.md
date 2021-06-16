@@ -15,7 +15,7 @@ Also, multiple classifier can be used to train the model, including
 - Bayesian Classifier: NBC(gaussianNB) and Gaussian
 - SVM - Linear Support Vector Machine and Support Vector Machine
 - Nueral Network - Multi-layer Perceptron
-- Regression Methods - Logistic Regression, Linear Discriminant Analysis  
+- Regression Methods - Logistic Regression and Linear Discriminant Analysis  
 
 ## Installation
 

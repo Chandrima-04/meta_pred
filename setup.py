@@ -6,6 +6,7 @@ requirements = [
     'pandas',
     'scipy',
     'click',
+    'catboost',
 ]
 
 

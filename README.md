@@ -11,7 +11,7 @@ Following preprocessing can be done:
 Also, multiple classifier can be used to train the model, including:
 - Tree Based Methods: Decision Tree Classifier
 - Bagging (Bootstrap Aggregation): Random Forest Classifier and ExtraTree
-- Boosting: AdaBoost
+- Boosting: AdaBoost, CatBoost and LightGBM
 - k-Nearest Neighbour
 - Bayesian Classifier: NBC(gaussianNB) and Gaussian
 - SVM - Linear Support Vector Machine and Support Vector Machine

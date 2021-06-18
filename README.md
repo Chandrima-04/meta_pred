@@ -22,6 +22,7 @@ The different types of Cross-Validations included are:
 - normal cross-validation 
 - kfold cross-validation
 - leave one group out cross-validation
+
 The split size can be manually modified. Default is 80:20 train:test cross-validation.
 
 Also, as metagenomic tools are very sensitive, there is an "noisy" option to study the effect of Gaussian noise and stability of the dataset.

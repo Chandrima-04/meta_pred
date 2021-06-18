@@ -33,6 +33,7 @@ MODEL_NAMES = [
     'decision_tree',
     'extra_tree',
     'adaboost',
+    'cat',
     'knn',
     'LDA',
     'neural_network',
@@ -40,6 +41,8 @@ MODEL_NAMES = [
     'linear_svc',
     'svm',
     'logistic_regression',
+    'PLSR',
+    'lgb',
 ]
 
 NORMALIZER_NAMES = [
@@ -72,9 +75,9 @@ def main():
     pass
 
 test_size = click.option('--test-size', default=0.2, help='The relative size of the test data')
-num_estimators = click.option('--num-estimators', default=20, help='Number of trees in our random forest and/or adaboast')
-num_neighbours = click.option('--num-neighbours', default=21, help='Number of clusters in our knn')
-n_components = click.option('--n-components', default=10,
+num_estimators = click.option('--num-estimators', default=100, help='Number of trees in our Ensemble Methods')
+num_neighbours = click.option('--num-neighbours', default=21, help='Number of clusters in our knn/MLknn')
+n_components = click.option('--n-components', default=100,
               help='Number of components for dimensionality reduction in Linear Discriminant Analysis')
 model_name = click.option('--model-name', default='random_forest', help='The model type to train')
 normalize_method = click.option('--normalize-method', default='standard_scalar', help='Normalization method')

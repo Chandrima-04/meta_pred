@@ -18,21 +18,29 @@ from sklearn.gaussian_process.kernels import RBF
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.neural_network import MLPClassifier
 from sklearn.discriminant_analysis import LinearDiscriminantAnalysis
+from sklearn.cross_decomposition import PLSRegression
+from catboost import CatBoostClassifier
+import lightgbm as lgb
 
 def split_data(data_tbl, features, test_size=0.2, seed=None):
     """Return a tuple of length four with train data, test data, train feature, test feature."""
     return train_test_split(data_tbl, features, test_size=test_size, random_state=seed)
 
-def get_classifier(data_tbl, features, method='random_forest', n_estimators=20, n_neighbours=21, n_components=10, seed=None):
+def get_classifier(data_tbl, features, method='random_forest', n_estimators=100, n_neighbours=21, n_components=100, seed=None):
     """Fits the model with chosen classifier along with given parameters."""
     if method == "random_forest":
-        classifier = RandomForestClassifier(n_estimators=n_estimators, random_state=seed)
+        classifier = RandomForestClassifier(n_estimators=n_estimators, criterion="entropy", bootstrap=True, warm_start=True, random_state=seed)
     elif method == "decision_tree":
         classifier = DecisionTreeClassifier(random_state=seed)
     elif method == "extra_tree":
         classifier = ExtraTreesClassifier(n_estimators=n_estimators, criterion='entropy', random_state=seed)
     elif method == "adaboost":
         classifier = AdaBoostClassifier(n_estimators=n_estimators, learning_rate=4)
+    elif method == "cat":
+        classifier = CatBoostClassifier(n_estimators=n_estimators, loss_function='MultiClass', eval_metric='Accuracy',
+                     leaf_estimation_method='Newton', learning_rate=0.1, random_strength=0.1, random_seed=seed)
+    elif method == "lgb":
+        classifier = lgb.LGBMClassifier(objective="multiclass", n_estimators=n_estimators, extra_trees=True, learning_rate=0.01, seed=seed)
     elif method == "gaussian":
         kernel_gpc = 1.0 * RBF(1.0)
         classifier = GaussianProcessClassifier(kernel=kernel_gpc, random_state=seed)
@@ -40,6 +48,8 @@ def get_classifier(data_tbl, features, method='random_forest', n_estimators=20, 
         classifier = GaussianNB()
     elif method == "knn":
         classifier = KNeighborsClassifier(n_neighbors=n_neighbours)
+    elif method == "PLSR":
+        classifier = PLSRegression(n_components=n_components)
     elif method == "linear_svc":
         classifier = svm.SVC(kernel='linear', probability=True)
     elif method == "svm":

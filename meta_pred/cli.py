@@ -29,20 +29,17 @@ from .classification import (
 )
 
 MODEL_NAMES = [
+    'LDA',
     'random_forest',
     'decision_tree',
     'extra_tree',
     'adaboost',
-    'cat',
     'knn',
-    'LDA',
-    'neural_network',
     'gaussianNB',
     'linear_svc',
     'svm',
     'logistic_regression',
-    'PLSR',
-    'lgb',
+    'neural_network',
 ]
 
 NORMALIZER_NAMES = [
@@ -88,7 +85,7 @@ normalize_threshold = click.option('--normalize-threshold', default='0.0001',
 
 
 @main.command('kfold')
-@click.option('--k-fold', default=5, help='The value of k for cross-validation')
+@click.option('--k-fold', default=10, help='The value of k for cross-validation')
 @test_size
 @num_estimators
 @num_neighbours
@@ -123,22 +120,15 @@ def kfold_cv(k_fold, test_size, num_estimators, num_neighbours,  n_components, m
     )
 
     click.echo(f'Average cross-validation score {mean_score} and standard deviation {std_score}',err=True)
-    for i in range(0,2):
-        if i == 0:
-            predictions = predict_with_model(model, split_test_data).round()
-            file_name = str(model_name + '_' + normalize_method)
-        else:
-            predictions = predict_with_model(model, split_test_data).round()
-            file_name = str(model_name + '_' + normalize_method + '_noisy')
-        model_results = []
-        model_results.append(accuracy_score(split_test_feature, predictions.round()))
-        model_results.append(precision_score(split_test_feature, predictions, average="micro"))
-        model_results.append(recall_score(split_test_feature, predictions, average="micro"))
-        tbl[file_name] = model_results
-
-        conf_matrix = pd.DataFrame(confusion_matrix(split_test_feature, predictions.round()))
-        conf_matrix.to_csv(os.path.join(str(out_dir + '/' + 'confusion_matrix' + '/'), file_name  + "." + 'csv'))
-
+    predictions = predict_with_model(model, split_test_data).round()
+    file_name = str(model_name + '_' + normalize_method)
+    model_results = []
+    model_results.append(accuracy_score(split_test_feature, predictions.round()))
+    model_results.append(precision_score(split_test_feature, predictions, average="micro"))
+    model_results.append(recall_score(split_test_feature, predictions, average="micro"))
+    tbl[file_name] = model_results
+    conf_matrix = pd.DataFrame(confusion_matrix(split_test_feature, predictions.round()))
+    conf_matrix.to_csv(os.path.join(str(out_dir + '/' + 'confusion_matrix' + '/'), file_name  + "." + 'csv'))
     col_names = [
         'Accuracy',
         'Precision',
@@ -223,7 +213,7 @@ def eval_all(test_size, num_estimators, num_neighbours, n_components, feature_na
     else:
         os.mkdir(str(out_dir + '/' + 'confusion_matrix'))
         os.mkdir(str(out_dir + '/' + 'pd_confusion_matrix'))
-
+    model_results = []
     noise_data = [0]
     if noisy==True:
         noise_data = NOISE_VALUES
@@ -248,8 +238,8 @@ def eval_all(test_size, num_estimators, num_neighbours, n_components, feature_na
             train_data = train_data+ train_noise
 
             model = train_model(
-                train_data, train_feature, method=model_name,
-                n_estimators=num_estimators, n_neighbours=num_neighbours, n_components=n_components, seed=seed
+                    train_data, train_feature, method=model_name,
+                    n_estimators=num_estimators, n_neighbours=num_neighbours, n_components=n_components, seed=seed
             )
 
             predictions = predict_with_model(model, test_data).round()
@@ -298,7 +288,7 @@ def eval_all(test_size, num_estimators, num_neighbours, n_components, feature_na
 def leave_one(num_estimators, num_neighbours,  n_components, model_name, normalize_method,
              feature_name, group_name, normalize_threshold, test_filename, metadata_file, data_file, out_dir):
     """Train and evaluate a model and validate using a third-party group. echo the model results to stderr."""
-    raw_data, microbes, feature, name_map, group_feature, group_map = group_feature_extraction(data,
+    raw_data, microbes, feature, name_map, group_feature, group_map = group_feature_extraction(data_file,
                                 metadata_file, feature_name=feature_name, group_name=group_name)
     click.echo(f'Training {model_name} using {normalize_method} to predict {feature_name}',err=True)
     tbl, seed = {}, randint(0, 1000)

@@ -26,7 +26,7 @@ def split_data(data_tbl, features, test_size=0.2, seed=None):
     """Return a tuple of length four with train data, test data, train feature, test feature."""
     return train_test_split(data_tbl, features, test_size=test_size, random_state=seed)
 
-def get_classifier(data_tbl, features, method='random_forest', n_estimators=100, n_neighbours=21, n_components=100, seed=None):
+def get_classifier(data_tbl, features, method='random_forest', n_estimators=100, n_neighbours=21, n_components=10, seed=None):
     """Fits the model with chosen classifier along with given parameters."""
     if method == "random_forest":
         classifier = RandomForestClassifier(n_estimators=n_estimators, criterion="entropy", bootstrap=True, warm_start=True, random_state=seed)
@@ -48,8 +48,6 @@ def get_classifier(data_tbl, features, method='random_forest', n_estimators=100,
         classifier = GaussianNB()
     elif method == "knn":
         classifier = KNeighborsClassifier(n_neighbors=n_neighbours)
-    elif method == "PLSR":
-        classifier = PLSRegression(n_components=n_components)
     elif method == "linear_svc":
         classifier = svm.SVC(kernel='linear', probability=True)
     elif method == "svm":
@@ -61,16 +59,16 @@ def get_classifier(data_tbl, features, method='random_forest', n_estimators=100,
     elif method == "neural_network":
         classifier = MLPClassifier(solver='lbfgs', alpha=1e-5, hidden_layer_sizes=(5, 2), max_iter= 10000)
     elif method == "LDA":
-        classifier = LinearDiscriminantAnalysis(n_components=n_components)
+        classifier = LinearDiscriminantAnalysis()
     return classifier
 
 
-def k_fold_crossvalid(data_tbl, features, method='random_forest', n_estimators=20, n_neighbours=21, n_components=10, k_fold=5, seed=None):
+def k_fold_crossvalid(data_tbl, features, method='random_forest', n_estimators=100, n_neighbours=21, n_components=10, k_fold=10, seed=None):
     """Return a model for saving after training using k-fold cross-validation."""
     scores = []
     classifier_score = 0
     classifier = get_classifier(data_tbl, features, method=method, n_estimators=n_estimators, n_neighbours=n_neighbours, n_components=n_components, seed=None)
-    cv = KFold(n_splits=k_fold, random_state=seed, shuffle=False)
+    cv = KFold(n_splits=k_fold, shuffle=False)
     for train_index, test_index in cv.split(data_tbl):
         X_train, X_test = data_tbl[train_index], data_tbl[test_index]
         y_train, y_test = features[train_index], features[test_index]
@@ -80,7 +78,7 @@ def k_fold_crossvalid(data_tbl, features, method='random_forest', n_estimators=2
              X_train_best, X_test_best, y_train_best, y_test_best = X_train, X_test, y_train, y_test
     return (classifier.fit(X_train_best, y_train_best), np.mean(scores), np.std(scores))
 
-def leave_one_group_out(data_tbl, features, group_name, method='random_forest', n_estimators=20, n_neighbours=21, n_components=10, seed=None):
+def leave_one_group_out(data_tbl, features, group_name, method='random_forest', n_estimators=100, n_neighbours=21, n_components=10, seed=None):
     scores = []
     classifier_score = 0
     classifier = get_classifier(data_tbl, features, method=method, n_estimators=n_estimators, n_neighbours=n_neighbours, n_components=n_components, seed=None)
@@ -95,7 +93,7 @@ def leave_one_group_out(data_tbl, features, group_name, method='random_forest', 
     return classifier.fit(X_train_best, y_train_best), np.mean(scores), np.std(scores), X_test, y_test
 
 
-def train_model(data_tbl, features, method='random_forest', n_estimators=20, n_neighbours=21, n_components=10, seed=None):
+def train_model(data_tbl, features, method='random_forest', n_estimators=100, n_neighbours=21, n_components=10, seed=None):
     """Return a trained model to predict features from data."""
     classifier = get_classifier(data_tbl, features, method=method, n_estimators=n_estimators, n_neighbours=n_neighbours, n_components=n_components, seed=None)
     classifier.fit(data_tbl, features)

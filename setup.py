@@ -7,6 +7,7 @@ requirements = [
     'scipy',
     'click',
     'catboost',
+    'lightgbm',
 ]
 
 

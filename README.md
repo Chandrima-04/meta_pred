@@ -31,7 +31,7 @@ Also, as metagenomic tools are very sensitive, there is an "noisy" option to stu
 
 From source
 ```
-git clone https://github.com/Chandrima-04/meta_pred.git
+git clone git@github.com:Chandrima-04/meta_pred.git
 cd meta_pred
 python setup.py install
 ```

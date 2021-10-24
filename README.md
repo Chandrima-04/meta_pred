@@ -2,13 +2,21 @@
 
 The program helps to predict metagenomic signature of an environment. An microbial environment can include a variety of ecologies (extreme environment, build environment, natural environment, etc) as well as host environment (human, animal, fungi,  plant, etc). It can be trained to use multiple classifier algorithm to predict the fingerprint.
 
-Following preprocessing can be done:
-- raw: no preprocessing ;
-- total-sum: having the sum of each row to be 1;
-- standard scalar: forces the column to have a mean of 0;
-- binary: 0,1 based on a threshold.
+## Features
 
-Also, multiple classifier can be used to train the model, including:
+### Preprocessing
+
+Following preprocessing can be done:
+
+- raw: no preprocessing
+- total-sum: having the sum of each row to be 1
+- standard scalar: forces the column to have a mean of 0
+- binary: 0,1 based on a threshold
+
+### Classification
+
+Also, multiple classifiers can be used to train the model, including:
+
 - Tree Based Methods: Decision Tree Classifier
 - Bagging (Bootstrap Aggregation): Random Forest Classifier and ExtraTree
 - Boosting: AdaBoost, CatBoost and LightGBM
@@ -19,7 +27,8 @@ Also, multiple classifier can be used to train the model, including:
 - Regression Methods - Logistic Regression and Linear Discriminant Analysis  
 
 The different types of Cross-Validations included are:
-- normal cross-validation 
+
+- normal cross-validation
 - kfold cross-validation
 - leave one group out cross-validation
 
@@ -30,7 +39,8 @@ Also, as metagenomic tools are very sensitive, there is an "noisy" option to stu
 ## Installation
 
 From source
-```
+
+```bash
 git clone git@github.com:Chandrima-04/meta_pred.git
 cd meta_pred
 python setup.py install
@@ -38,7 +48,7 @@ python setup.py install
 
 ## Usage
 
-```
+```bash
 meta_pred [all/one/k-fold/leave-one] <options> [METADATA-FILE] [DATA-FILE] [OUTPUT-FOLDER]
 ```
 

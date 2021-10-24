@@ -52,6 +52,23 @@ python setup.py install
 meta_pred [all/one/k-fold/leave-one] <options> [METADATA-FILE] [DATA-FILE] [OUTPUT-FOLDER]
 ```
 
+Run 'meta_pred one --help' for help.
+
+```bash
+Options:
+  --test-size FLOAT           The relative size of the test data
+  --num-estimators INTEGER    Number of trees in our Ensemble Methods
+  --num-neighbours INTEGER    Number of clusters in our knn/MLknn
+  --n-components INTEGER      Number of components for dimensionality
+                              reduction in Linear Discriminant Analysis
+  --model-name TEXT           The model type to train
+  --normalize-method TEXT     Normalization method
+  --feature-name TEXT         The feature to predict
+  --normalize-threshold TEXT  Normalization threshold for binary
+                              normalization.
+  --model-filename TEXT       Filename of previously saved model
+```
+
 ## Credits
 
 This package is written and maintained by [Chandrima Bhattacharya](mailto:chb4004@med.cornell.edu).

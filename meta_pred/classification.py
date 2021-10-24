@@ -18,7 +18,6 @@ from sklearn.gaussian_process.kernels import RBF
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.neural_network import MLPClassifier
 from sklearn.discriminant_analysis import LinearDiscriminantAnalysis
-from sklearn.cross_decomposition import PLSRegression
 from catboost import CatBoostClassifier
 import lightgbm as lgb
 

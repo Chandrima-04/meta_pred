@@ -36,12 +36,6 @@ cd meta_pred
 python setup.py install
 ```
 
-To run tests
-```
-cd path/to/meta_pred
-python -m pytest --color=yes . -s
-```
-
 ## Usage
 
 ```

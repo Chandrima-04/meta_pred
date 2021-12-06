@@ -8,7 +8,6 @@ from sklearn.metrics import (
     precision_score,
     recall_score,
     confusion_matrix,
-    classification_report,
     accuracy_score,
 )
 from .preprocessing import (
@@ -18,14 +17,11 @@ from .preprocessing import (
 )
 from .classification import (
     split_data,
-    get_classifier,
 	k_fold_crossvalid,
     leave_one_group_out,
     train_model,
     predict_with_model,
-    multi_predict_with_model,
     predict_top_classes,
-    feature_importance,
 )
 
 MODEL_NAMES = [

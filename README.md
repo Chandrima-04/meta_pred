@@ -9,7 +9,7 @@ The program helps to predict metagenomic signature of an environment. An microbi
 Following preprocessing can be done:
 
 - raw: no preprocessing
-- total-sum: having the sum of each row to be 1
+- total-sum: relative abundance method having the sum of each row to be 1
 - standard scalar: forces the column to have a mean of 0
 - binary: 0,1 based on a threshold
 

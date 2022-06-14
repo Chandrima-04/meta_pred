@@ -1,5 +1,10 @@
+import numpy as np
 import pandas as pd
 from sklearn.preprocessing import StandardScaler
+from skbio.stats.composition import (
+	multiplicative_replacement,
+	clr
+)
 
 def feature_extraction(data, metadata_file, feature_name):
     """Return multiple dataframe with raw_data and features"""
@@ -69,14 +74,23 @@ def normalize_data(data_tbl, method='standard_scalar',threshold=0.0001):
         'standard_scalar': normalize_data_standard_scalar,
         'total_sum' : normalize_data_total_sum,
         'binary' : normalize_data_binary,
+        'multiplicative_replacement': normalize_multiplicative_replacement,
+        'clr': normalize_clr,
     }[method.lower()]
     return processor(data_tbl)
 
-
 def normalize_data_raw(data_tbl):
-    """Return the data table without normalization."""
-    return data_tbl
-
+	"""Return the data table without normalization."""
+	return data_tbl
+    
+def normalize_clr(data_tbl):
+	"""Return the compositional data table with clr replacement."""
+	data = normalize_multiplicative_replacement(data_tbl)
+	return clr(data)
+	
+def normalize_multiplicative_replacement(data_tbl):
+	"""Return the compositional data table with multiplicative replacement."""
+	return multiplicative_replacement(data_tbl)
 
 def normalize_data_standard_scalar(data_tbl):
     """Return a data table with each column standardized to have a mean of 0."""

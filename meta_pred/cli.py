@@ -25,24 +25,27 @@ from .classification import (
 )
 
 MODEL_NAMES = [
-    'LDA',
-    'random_forest',
+    'adaboost',
     'decision_tree',
     'extra_tree',
-    'adaboost',
-    'knn',
+    'gaussian',
     'gaussianNB',
+    'knn',
+    'LDA',
     'linear_svc',
-    'svm',
     'logistic_regression',
-    'neural_network',
+    'mixed',
+    'random_forest',
+    'svm',   
 ]
 
 NORMALIZER_NAMES = [
+    'binary',
+    'clr',
+    'multiplicative_replacement',
     'raw',
     'standard_scalar',
     'total_sum',
-    'binary'
 ]
 
 NOISE_VALUES = [
@@ -68,10 +71,8 @@ def main():
     pass
 
 test_size = click.option('--test-size', default=0.2, help='The relative size of the test data')
-num_estimators = click.option('--num-estimators', default=100, help='Number of trees in our Ensemble Methods')
+num_estimators = click.option('--num-estimators', default=1000, help='Number of trees in our Ensemble Methods')
 num_neighbours = click.option('--num-neighbours', default=21, help='Number of clusters in our knn/MLknn')
-n_components = click.option('--n-components', default=100,
-              help='Number of components for dimensionality reduction in Linear Discriminant Analysis')
 model_name = click.option('--model-name', default='random_forest', help='The model type to train')
 normalize_method = click.option('--normalize-method', default='standard_scalar', help='Normalization method')
 feature_name = click.option('--feature-name', default='city', help='The feature to predict')
@@ -85,7 +86,6 @@ normalize_threshold = click.option('--normalize-threshold', default='0.0001',
 @test_size
 @num_estimators
 @num_neighbours
-@n_components
 @model_name
 @normalize_method
 @feature_name
@@ -95,7 +95,7 @@ normalize_threshold = click.option('--normalize-threshold', default='0.0001',
 @click.argument('metadata_file', type=click.File('r'))
 @click.argument('data_file', type=click.File('r'))
 @click.argument('out_dir')
-def kfold_cv(k_fold, test_size, num_estimators, num_neighbours,  n_components, model_name, normalize_method,
+def kfold_cv(k_fold, test_size, num_estimators, num_neighbours, model_name, normalize_method,
              feature_name, normalize_threshold, test_filename, model_filename, metadata_file, data_file, out_dir):
     """Train and evaluate a model with k-fold cross-validation. echo the model results to stderr."""
     raw_data, microbes, feature, name_map = feature_extraction(data_file, metadata_file, feature_name=feature_name)
@@ -103,34 +103,26 @@ def kfold_cv(k_fold, test_size, num_estimators, num_neighbours,  n_components, m
     tbl, seed = {}, randint(0, 1000)
     if not os.path.exists(out_dir):
         os.mkdir(out_dir)
-        os.mkdir(str(out_dir + '/' + 'confusion_matrix'))
-    else:
-        os.mkdir(str(out_dir + '/' + 'confusion_matrix'))
+    
     normalized = normalize_data(raw_data, method=normalize_method, threshold=normalize_threshold)
     split_train_data, split_test_data, split_train_feature, split_test_feature = split_data(
         normalized, feature, test_size=test_size, seed=seed
     )
-    model, mean_score, std_score = k_fold_crossvalid(
+    mean_score, std_score, best_score = k_fold_crossvalid(
         split_train_data, split_train_feature, method=model_name,
-        n_estimators=num_estimators, n_neighbours=num_neighbours, n_components=n_components, k_fold=k_fold, seed=seed
+        n_estimators=num_estimators, n_neighbours=num_neighbours, k_fold=k_fold, seed=seed
     )
-
-    click.echo(f'Average cross-validation score {mean_score} and standard deviation {std_score}',err=True)
-    predictions = predict_with_model(model, split_test_data).round()
-    file_name = str(model_name + '_' + normalize_method)
     model_results = []
-    model_results.append(accuracy_score(split_test_feature, predictions.round()))
-    model_results.append(precision_score(split_test_feature, predictions, average="micro"))
-    model_results.append(recall_score(split_test_feature, predictions, average="micro"))
-    tbl[file_name] = model_results
-    conf_matrix = pd.DataFrame(confusion_matrix(split_test_feature, predictions.round()))
-    conf_matrix.to_csv(os.path.join(str(out_dir + '/' + 'confusion_matrix' + '/'), file_name  + "." + 'csv'))
-    col_names = [
-        'Accuracy',
-        'Precision',
-        'Recall',
-    ]
+    model_results.append(best_score)
+    model_results.append(mean_score)
+    model_results.append(std_score)
 
+    col_names = [
+        'Best Score',
+        'Mean Score',
+        'Standard Deviation',
+    ]
+    tbl[str(model_name + ' ' + normalize_method)] = model_results
     out_metrics = pd.DataFrame.from_dict(tbl, columns=col_names, orient='index')
     out_metrics.to_csv(os.path.join(out_dir, str(model_name + '_' + normalize_method) + "." + 'csv'))
 
@@ -138,7 +130,6 @@ def kfold_cv(k_fold, test_size, num_estimators, num_neighbours,  n_components, m
 @test_size
 @num_estimators
 @num_neighbours
-@n_components
 @model_name
 @normalize_method
 @feature_name
@@ -147,7 +138,7 @@ def kfold_cv(k_fold, test_size, num_estimators, num_neighbours,  n_components, m
 @click.argument('metadata_file', type=click.File('r'))
 @click.argument('data_file', type=click.File('r'))
 @click.argument('out_dir')
-def eval_one(test_size, num_estimators, num_neighbours, n_components, model_name, normalize_method,
+def eval_one(test_size, num_estimators, num_neighbours, model_name, normalize_method,
              feature_name, normalize_threshold, model_filename, metadata_file, data_file, out_dir):
     """Train and evaluate a model. Print the model results to stderr."""
     raw_data, microbes, feature, name_map = feature_extraction(data_file, metadata_file, feature_name=feature_name)
@@ -165,9 +156,9 @@ def eval_one(test_size, num_estimators, num_neighbours, n_components, model_name
             normalized, feature, test_size=test_size, seed=seed
     )
 
-    model = train_model(
+    model, time = train_model(
             train_data, train_feature, method=model_name,
-            n_estimators=num_estimators, n_neighbours=num_neighbours, n_components=n_components, seed=seed
+            n_estimators=num_estimators, n_neighbours=num_neighbours, seed=seed
     )
     predictions = predict_with_model(model, test_data).round()
     conf_matrix = pd.DataFrame(confusion_matrix(test_feature, predictions.round()))
@@ -190,14 +181,13 @@ def eval_one(test_size, num_estimators, num_neighbours, n_components, model_name
 @test_size
 @num_estimators
 @num_neighbours
-@n_components
 @feature_name
 @normalize_threshold
 @click.option('--noisy', default=True, help='Add noise to data')
 @click.argument('metadata_file', type=click.File('r'))
 @click.argument('data_file', type=click.File('r'))
 @click.argument('out_dir')
-def eval_all(test_size, num_estimators, num_neighbours, n_components, feature_name, normalize_threshold, noisy,
+def eval_all(test_size, num_estimators, num_neighbours, feature_name, normalize_threshold, noisy,
              metadata_file, data_file, out_dir):
     """Evaluate all models and all normalizers."""
     raw_data, microbes, feature, name_map = feature_extraction(data_file, metadata_file, feature_name=feature_name)
@@ -233,15 +223,16 @@ def eval_all(test_size, num_estimators, num_neighbours, n_components, feature_na
             train_noise = np.random.normal(0, i,(train_data.shape[0], train_data.shape[1]))
             train_data = train_data+ train_noise
 
-            model = train_model(
+            model, time = train_model(
                     train_data, train_feature, method=model_name,
-                    n_estimators=num_estimators, n_neighbours=num_neighbours, n_components=n_components, seed=seed
+                    n_estimators=num_estimators, n_neighbours=num_neighbours, seed=seed
             )
-
+            
             predictions = predict_with_model(model, test_data).round()
             model_results = predict_top_classes(model, test_data, test_feature)
             model_results.append(precision_score(test_feature, predictions, average="micro"))
             model_results.append(recall_score(test_feature, predictions, average="micro"))
+            model_results.insert(0,time);
             model_results.insert(0,i);
             model_results.insert(0,norm_name);
             model_results.insert(0,model_name);
@@ -256,6 +247,7 @@ def eval_all(test_size, num_estimators, num_neighbours, n_components, feature_na
         'Classifier',
         'Preprocessing',
         'Noise',
+        'Training_Time_in_sec',
         'Accuracy',
         'Top_2_accuracy',
         'Top_3_accuracy',
@@ -271,7 +263,6 @@ def eval_all(test_size, num_estimators, num_neighbours, n_components, feature_na
 @main.command('leave-one')
 @num_estimators
 @num_neighbours
-@n_components
 @model_name
 @normalize_method
 @feature_name
@@ -281,7 +272,7 @@ def eval_all(test_size, num_estimators, num_neighbours, n_components, feature_na
 @click.argument('metadata_file', type=click.File('r'))
 @click.argument('data_file', type=click.File('r'))
 @click.argument('out_dir')
-def leave_one(num_estimators, num_neighbours,  n_components, model_name, normalize_method,
+def leave_one(num_estimators, num_neighbours, model_name, normalize_method,
              feature_name, group_name, normalize_threshold, test_filename, metadata_file, data_file, out_dir):
     """Train and evaluate a model and validate using a third-party group. echo the model results to stderr."""
     raw_data, microbes, feature, name_map, group_feature, group_map = group_feature_extraction(data_file,
@@ -290,29 +281,22 @@ def leave_one(num_estimators, num_neighbours,  n_components, model_name, normali
     tbl, seed = {}, randint(0, 1000)
     if not os.path.exists(out_dir):
         os.mkdir(out_dir)
-        os.mkdir(str(out_dir + '/' + 'confusion_matrix'))
-    else:
-        os.mkdir(str(out_dir + '/' + 'confusion_matrix'))
     normalized = normalize_data(raw_data, method=normalize_method, threshold=normalize_threshold)
-
-    model, mean_score, std_score, test_data, test_feature = leave_one_group_out(
+    
+    mean_score, std_score, best_score = leave_one_group_out(
         normalized, feature, group_feature, method=model_name,
-        n_estimators=num_estimators, n_neighbours=num_neighbours, n_components=n_components, seed=seed
+        n_estimators=num_estimators, n_neighbours=num_neighbours, seed=seed
     )
 
-    predictions = predict_with_model(model, test_data).round()
-
-    conf_matrix = pd.DataFrame(confusion_matrix(test_feature, predictions.round()))
-    conf_matrix.to_csv(os.path.join(str(out_dir + '/' + 'confusion_matrix' + '/'), str(model_name + '_' + normalize_method) + "." + 'csv'))
-
     model_results = []
-    model_results.append(accuracy_score(test_feature, predictions.round()))
-    model_results.append(precision_score(test_feature, predictions, average="micro"))
-    model_results.append(recall_score(test_feature, predictions, average="micro"))
+    model_results.append(best_score)
+    model_results.append(mean_score)
+    model_results.append(std_score)
+
     col_names = [
-        'Accuracy',
-        'Precision',
-        'Recall',
+        'Best Score',
+        'Mean Score',
+        'Standard Deviation',
     ]
     tbl[str(model_name + ' ' + normalize_method)] = model_results
     out_metrics = pd.DataFrame.from_dict(tbl, columns=col_names, orient='index')

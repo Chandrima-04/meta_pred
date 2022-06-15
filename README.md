@@ -29,10 +29,10 @@ Following preprocessing can be done:
 - clr: transformation function for compositional data based on Aitchison geometry to the real space
 - multiplicative_replacement: transformation function for compositional data  uses the multiplicative replacement strategy for replacing zeros such that compositions still add up to 1
 - raw: no preprocessing
-- total-sum: relative abundance method having the sum of each row to be 1
 - standard scalar: forces the column to have a mean of 0
+- total-sum: relative abundance method having the sum of each row to be 1
 
-*Note: Multiple methods of transformation/preprocessing will distort the data.
+*NOTE: Multiple methods of transformation/preprocessing will distort the data.
 
 ### Classification
 
@@ -46,6 +46,9 @@ Also, multiple classifiers can be used to train the model, including:
 - SVM: Linear Support Vector Machine and Support Vector Machine
 - Regression Methods: Logistic Regression and Linear Discriminant Analysis 
 - Voting Classifier: Consisting of top performing model based on Linear SVM, Random Forest and Logistic Regression
+
+
+### Cross-validation
 
 The different types of Cross-Validations included are:
 
@@ -69,11 +72,25 @@ python setup.py install
 
 ## Usage
 
+For help:
+```bash
+meta_pred one --help
+```
+
+For running meta_pred:
 ```bash
 meta_pred [all/one/kfold/leave-one] <options> [METADATA-FILE] [DATA-FILE] [OUTPUT-FOLDER]
 ```
 
-Run 'meta_pred one --help' for help.
+The different modes are:
+all: To evaluate all 12 classifier methods along with 6 preprocessing. Usually comes with additional *noisy* parameter which adds a Gaussian noise between 0.0000000001-1000 to test the tolerance of the data.
+
+one: When you already have a choosen classifier and preprocessing method.
+
+kfold: Machine Learning based cross-validation, with k=10 (Can be modified by user).
+
+leave-one: Leave One Group Out cross-validation which provides train/test indices to split data according to a third-party provided group. This group information can be used to encode arbitrary domain specific stratifications of the samples as integers. The parameters *group-name* (usually arbitary group) and *feature-name* (usually location like city, continent) needs to be set.
+
 
 ```bash
 Options:
@@ -87,6 +104,27 @@ Options:
                               normalization.
   --model-filename TEXT       Filename of previously saved model
 ```
+
+## Output
+
+*NOTE: Precision, recall, accuracy are calculated based on micro average assuming unbalanced classes in dataset.
+
+#### all/one:
+
+```bash
+-- File consisting of accuracy, precision, recall, and other parameters.
+-- Folder with all confusion matrix
+```
+
+#### kfold/loo:
+
+```bash
+-- File consisting of best score, mean score and standard deviation.
+```
+
+## License
+
+All material is provided under the MIT License.
 
 ## Credits
 

@@ -32,7 +32,7 @@ Following preprocessing can be done:
 - standard scalar: forces the column to have a mean of 0
 - total-sum: relative abundance method having the sum of each row to be 1
 
-*NOTE: Multiple methods of transformation/preprocessing will distort the data.
+NOTE: Multiple methods of transformation/preprocessing will distort the data.
 
 ### Classification
 
@@ -107,7 +107,7 @@ Options:
 
 ## Output
 
-*NOTE: Precision, recall, accuracy are calculated based on micro average assuming unbalanced classes in dataset.
+NOTE: Precision, recall, accuracy are calculated based on micro average assuming unbalanced classes in dataset.
 
 #### all/one:
 

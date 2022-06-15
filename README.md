@@ -1,5 +1,11 @@
 # Meta_Pred
 
+Metagenomic data can be coming from multiple sources:
+- Targeted sequencing: 16S, 18S, ITS
+- Whole Genome Sequencing: both Shotgun (Illumina) or Long-Reads (PacBio or Nanopore) or even Linked-Reads (10X)
+
+
+
 Meta_pred is a computational prediction based tool for exploring metagenomic fingerprint or signature. The tool offers multiple modules, including user selection of model, multiple cross-validation for model stability, and can be applied for all kind of metagenomic data, including OTUs, WGS, long reads. 
 
 ## Features

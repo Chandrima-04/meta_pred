@@ -42,7 +42,7 @@ Also, multiple classifiers can be used to train the model, including:
 - Bagging (Bootstrap Aggregation): Random Forest Classifier and ExtraTree
 - Boosting: AdaBoost
 - k-Nearest Neighbour
-- Bayesian Classifier: NBC(gaussianNB) and Gaussian
+- Bayesian Classifier: NBC(gaussianNB) 
 - SVM: Linear Support Vector Machine and Support Vector Machine
 - Regression Methods: Logistic Regression and Linear Discriminant Analysis 
 - Voting Classifier: Consisting of top performing model based on Linear SVM, Random Forest and Logistic Regression

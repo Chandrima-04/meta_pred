@@ -28,7 +28,6 @@ MODEL_NAMES = [
     'adaboost',
     'decision_tree',
     'extra_tree',
-    'gaussian',
     'gaussianNB',
     'knn',
     'LDA',

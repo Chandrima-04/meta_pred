@@ -16,8 +16,10 @@ Metagenomics data can be defined as follow:
 
 It is known widely that metagenomics data has its own signature, but due to the variation in data quality, a single tool does not cover all kind of data. Hence, we develop meta_pred, a metagenomic-based classifier for exploring metagenomic fingerprint.
 
-The tool offers 6 preprocessing methods and 12 classifiers. It allows the users to choose methods to explore multiple preprocessing methods/cross-validation techniques, to find the best method. 
+![Meta_Pred](https://user-images.githubusercontent.com/9072403/177652386-afea994c-b1f3-41a1-b571-8347da6aca02.jpeg)
 
+
+The tool offers 6 preprocessing methods and 12 classifiers. It allows the users to choose methods to explore multiple preprocessing methods/cross-validation techniques, to find the best method. 
 
 ## Features
 
@@ -110,6 +112,7 @@ Options:
 NOTE: Precision, recall, accuracy are calculated based on micro average assuming unbalanced classes in dataset.
 
 #### all/one:
+
 
 ```bash
 -- File consisting of accuracy, precision, recall, and other parameters.

@@ -72,6 +72,17 @@ cd meta_pred
 python setup.py install
 ```
 
+## Requirements
+
+- Python >= 3.6
+- Cython
+- scikit-learn
+- scikit-bio
+- numpy
+- pandas
+- scipy
+- click
+
 ## Usage
 
 For help:
@@ -85,7 +96,36 @@ meta_pred [all/one/kfold/leave-one] <options> [METADATA-FILE] [DATA-FILE] [OUTPU
 ```
 
 The different modes are:
+
+### Newbie Mode (What is Machine Learning?)
 all: To evaluate all 12 classifier methods along with 6 preprocessing. Usually comes with additional *noisy* parameter which adds a Gaussian noise between 0.0000000001-1000 to test the tolerance of the data.
+
+```bash
+meta_pred all --noisy TRUE --feature-name city toy_data/toy_metadata.csv toy_data/toy_input.csv toy_data/toy_all
+```
+
+#### Output
+
+The file consists of 
+- Directory consisting of confusion matrix for each run
+- Directory consisting of predicted confusion matrix for each run with annotated feature names
+- Summary file called output_metrics.csv 
+
+```bash
+head toy_data/toy_all/output_metrics.csv 
+
+,Classifier,Preprocessing,Noise,Training_Time_in_sec,Accuracy,Top_2_accuracy,Top_3_accuracy,Top_5_accuracy,Top_10_accuracy,Precision,Recall
+adaboost_binary_0,adaboost,binary,0,25.02643466,0.611111111,0.777777778,0.805555556,0.944444444,1,0.611111111,0.611111111
+adaboost_binary_1e-10,adaboost,binary,1.00E-10,117.9060383,0.611111111,0.777777778,0.833333333,0.916666667,1,0.611111111,0.611111111
+adaboost_binary_1e-09,adaboost,binary,1.00E-09,123.2134194,0.666666667,0.777777778,0.888888889,0.944444444,1,0.666666667,0.666666667
+adaboost_binary_1e-08,adaboost,binary,1.00E-08,122.9907653,0.666666667,0.694444444,0.833333333,0.944444444,1,0.666666667,0.666666667
+adaboost_binary_1e-07,adaboost,binary,1.00E-07,131.499526,0.555555556,0.777777778,0.833333333,0.944444444,1,0.555555556,0.555555556
+adaboost_binary_1e-06,adaboost,binary,1.00E-06,149.7495966,0.277777778,0.472222222,0.722222222,0.888888889,1,0.277777778,0.277777778
+adaboost_binary_1e-05,adaboost,binary,1.00E-05,206.7691383,0.333333333,0.5,0.583333333,0.833333333,1,0.333333333,0.333333333
+adaboost_binary_0.0001,adaboost,binary,0.0001,219.425483,0.25,0.416666667,0.5,0.861111111,1,0.25,0.25
+adaboost_binary_0.001,adaboost,binary,0.001,214.7230728,0.222222222,0.305555556,0.444444444,0.722222222,1,0.222222222,0.222222222
+
+```
 
 one: When you already have a choosen classifier and preprocessing method.
 
@@ -94,7 +134,7 @@ kfold: Machine Learning based cross-validation, with k=10 (Can be modified by us
 leave-one: Leave One Group Out cross-validation which provides train/test indices to split data according to a third-party provided group. This group information can be used to encode arbitrary domain specific stratifications of the samples as integers. The parameters *group-name* (usually arbitary group) and *feature-name* (usually location like city, continent) needs to be set.
 
 
-```bash
+```
 Options:
   --test-size FLOAT           The relative size of the test data
   --num-estimators INTEGER    Number of trees in our Ensemble Methods

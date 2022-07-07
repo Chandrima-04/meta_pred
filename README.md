@@ -87,12 +87,29 @@ python setup.py install
 
 For help:
 ```bash
-meta_pred one --help
+General:
+meta_pred --help
+
+To find particular mode:
+meta_pred [all/one/kfold/leave-one] --help
 ```
 
 For running meta_pred:
 ```bash
 meta_pred [all/one/kfold/leave-one] <options> [METADATA-FILE] [DATA-FILE] [OUTPUT-FOLDER]
+```
+
+#### Options:
+```
+  --test-size FLOAT           The relative size of the test data
+  --num-estimators INTEGER    Number of trees in our Ensemble Methods
+  --num-neighbours INTEGER    Number of clusters in our knn
+  --model-name TEXT           The model type to train
+  --normalize-method TEXT     Normalization method
+  --feature-name TEXT         The feature to predict
+  --normalize-threshold TEXT  Normalization threshold for binary
+                              normalization.
+  --model-filename TEXT       Filename of previously saved model
 ```
 
 The different modes are:
@@ -124,46 +141,54 @@ adaboost_binary_1e-06,adaboost,binary,1.00E-06,149.7495966,0.277777778,0.4722222
 adaboost_binary_1e-05,adaboost,binary,1.00E-05,206.7691383,0.333333333,0.5,0.583333333,0.833333333,1,0.333333333,0.333333333
 adaboost_binary_0.0001,adaboost,binary,0.0001,219.425483,0.25,0.416666667,0.5,0.861111111,1,0.25,0.25
 adaboost_binary_0.001,adaboost,binary,0.001,214.7230728,0.222222222,0.305555556,0.444444444,0.722222222,1,0.222222222,0.222222222
-
 ```
 
+Note: For the purpose of simulating noise in the natural environment (sequencing, collection bias), we also added Gaussian noise to gauge the impact on the models’ performance.
+![Gaussian_noise](https://user-images.githubusercontent.com/9072403/177815688-cee08db7-22fe-4956-929b-c2c647dd5b03.png)
+
+
+### ML Expertise Mode (Have your own Fav model)
 one: When you already have a choosen classifier and preprocessing method.
 
+```bash
+meta_pred one --model-name linear_svc --normalize-method binary  --feature-name city toy_data/toy_metadata.csv toy_data/toy_input.csv toy_data/toy_one
+```
+
+#### Output
+
+- Confusion matrix
+- CSV file consisting of report named on model selected
+
+```bash
+head toy_data/toy_one/linear_svc_binary.csv 
+
+,Accuracy,Precision,Recall
+linear_svc binary,0.8955223880597015,0.8955223880597015,0.8955223880597015
+```
+
+### Whiz Mode (validating using cross-validation!)
+
 kfold: Machine Learning based cross-validation, with k=10 (Can be modified by user).
+
+```bash
+meta_pred kfold --k-fold 5 --normalize-method clr --feature-name continent toy_data/toy_metadata.csv toy_data/toy_input.csv toy_data/toy_kfold
+```
+
+#### Output
+- CSV file consisting of report named on model selected
+
+```bash
+head toy_data/toy_kfold/random_forest_clr.csv
+
+,Best Score,Mean Score,Standard Deviation
+random_forest clr,0.9056603773584906,0.8785195936139333,0.03640502469381202
+```
+
+### Explorer Mode (validating using LOGO cross-validation!)
 
 leave-one: Leave One Group Out cross-validation which provides train/test indices to split data according to a third-party provided group. This group information can be used to encode arbitrary domain specific stratifications of the samples as integers. The parameters *group-name* (usually arbitary group) and *feature-name* (usually location like city, continent) needs to be set.
 
 
-```
-Options:
-  --test-size FLOAT           The relative size of the test data
-  --num-estimators INTEGER    Number of trees in our Ensemble Methods
-  --num-neighbours INTEGER    Number of clusters in our knn
-  --model-name TEXT           The model type to train
-  --normalize-method TEXT     Normalization method
-  --feature-name TEXT         The feature to predict
-  --normalize-threshold TEXT  Normalization threshold for binary
-                              normalization.
-  --model-filename TEXT       Filename of previously saved model
-```
-
-## Output
-
-NOTE: Precision, recall, accuracy are calculated based on micro average assuming unbalanced classes in dataset.
-
-#### all/one:
-
-
-```bash
--- File consisting of accuracy, precision, recall, and other parameters.
--- Folder with all confusion matrix
-```
-
-#### kfold/loo:
-
-```bash
--- File consisting of best score, mean score and standard deviation.
-```
 
 ## License
 

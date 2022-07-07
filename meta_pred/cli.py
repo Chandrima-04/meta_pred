@@ -146,10 +146,8 @@ def eval_one(test_size, num_estimators, num_neighbours, model_name, normalize_me
     if not os.path.exists(out_dir):
         os.mkdir(out_dir)
         os.mkdir(str(out_dir + '/' + 'confusion_matrix'))
-        os.mkdir(str(out_dir + '/' + 'classification_report'))
     else:
         os.mkdir(str(out_dir + '/' + 'confusion_matrix'))
-        os.mkdir(str(out_dir + '/' + 'classification_report'))
     normalized = normalize_data(raw_data, method=normalize_method, threshold=normalize_threshold)
     train_data, test_data, train_feature, test_feature = split_data(
             normalized, feature, test_size=test_size, seed=seed

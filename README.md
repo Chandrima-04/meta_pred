@@ -2,7 +2,9 @@
 
 Metagenomic data can be coming from multiple sources:
 - Targeted sequencing: 16S, 18S, ITS
-- Whole Genome Sequencing: both Shotgun (Illumina) or Long-Reads (PacBio or Nanopore) or even Linked-Reads (10X)
+- Shotgun Sequencing (Illumina, Ultima, etc) 
+- Long-Reads (PacBio, ONT, etc) 
+- Linked-Reads (10X)
 
 Metagenomics data can be defined as follow:
 - Quantatitive: Metagenomic results are usually quantative. Based on the tool they can be absolute or relative values in a given sample.

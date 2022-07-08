@@ -109,9 +109,11 @@ meta_pred [all/one/kfold/leave-one] <options> [METADATA-FILE] [DATA-FILE] [OUTPU
   --model-name TEXT           The model type to train
   --normalize-method TEXT     Normalization method
   --feature-name TEXT         The feature to predict
-  --normalize-threshold TEXT  Normalization threshold for binary
-                              normalization.
-  --model-filename TEXT       Filename of previously saved model
+  --normalize-threshold TEXT  Normalization threshold for binary normalization
+  --noisy BOOLEAN             Whether add Gaussian noise or not
+  metadata_file CSV_FILE      CSV file with metadata, features defining the location of data collection
+  data_file CSV_FILE          CSV file with samples as row and microbes associated as column 
+  out_folder TEXT             Name of the output folder to be created
 ```
 
 The different modes are:

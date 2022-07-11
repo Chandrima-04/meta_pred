@@ -193,6 +193,15 @@ random_forest clr,0.9056603773584906,0.8785195936139333,0.03640502469381202
 leave-one: Leave One Group Out cross-validation which provides train/test indices to split data according to a third-party provided group. This group information can be used to encode arbitrary domain specific stratifications of the samples as integers. The parameters *group-name* (usually arbitary group) and *feature-name* (usually location like city, continent) needs to be set.
 
 
+## Datasets
+
+The datasets used in this Paper are from 
+
+- MetaSUB: Danko, D., Bezdan, D., Afshin, E.E., Ahsanuddin, S., Bhattacharya, C., Butler, D.J., Chng, K.R., Donnellan, D., Hecht, J., Jackson, K. and Kuchin, K., 2021. A global metagenomic map of urban microbiomes and antimicrobial resistance. Cell, 184(13), pp.3376-3393.
+
+- TARA Ocean: Salazar, G., Paoli, L., Alberti, A., Huerta-Cepas, J., Ruscheweyh, H.J., Cuenca, M., Field, C.M., Coelho, L.P., Cruaud, C., Engelen, S. and Gregory, A.C., 2019. Gene expression changes and community turnover differentially shape the global ocean metatranscriptome. Cell, 179(5), pp.1068-1083.
+
+
 
 ## License
 

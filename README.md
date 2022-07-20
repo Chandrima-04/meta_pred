@@ -21,7 +21,7 @@ It is known widely that metagenomics data has its own signature, but due to the 
 ![Meta_Pred](https://user-images.githubusercontent.com/9072403/177652386-afea994c-b1f3-41a1-b571-8347da6aca02.jpeg)
 
 
-The tool offers 6 preprocessing methods and 12 classifiers. It allows the users to choose methods to explore multiple preprocessing methods/cross-validation techniques, to find the best method. 
+The tool offers 6 preprocessing methods and 11 classifiers. It allows the users to choose methods to explore multiple preprocessing methods/cross-validation techniques, to find the best method. 
 
 ## Features
 

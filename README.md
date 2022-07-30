@@ -7,7 +7,7 @@ Metagenomic data can be coming from multiple sources:
 - Linked-Reads (10X)
 
 Metagenomics data can be defined as follow:
-- Quantatitive: Metagenomic results are usually quantative. Based on the tool they can be absolute or relative values in a given sample.
+- Quantatitive: Metagenomic results are usually quantative. Based on the tool they can be absolute or relative values in a given sample
 - Categorical: Variables represent types of data which may be divided into groups
 - Nominal: Data that is classified without a natural order or rank
 - Unbalanced: Most of the dataset are usually unbalanced in nature
@@ -16,7 +16,7 @@ Metagenomics data can be defined as follow:
 - Sparse Datasets: Most of the value in an matrix are 0
 - Usually m>n where m= number of microbes and n=number of samples
 
-It is known widely that metagenomics data has its own signature, but due to the variation in data quality, a single tool does not cover all kind of data. Hence, we develop meta_pred, a metagenomic-based classifier for exploring metagenomic fingerprint.
+It is widely known that metagenomics data has its own signature, but due to variations in data quality, a single tool does not cover all kinds of data. Hence, we developed meta_pred, a metagenomic-based classifier for exploring the metagenomic fingerprint.
 
 ![Meta_Pred](https://user-images.githubusercontent.com/9072403/177652386-afea994c-b1f3-41a1-b571-8347da6aca02.jpeg)
 
@@ -62,7 +62,7 @@ The different types of Cross-Validations included are:
 
 The split size can be manually modified. Default is 80:20 train:test cross-validation.
 
-Also, as metagenomic tools are very sensitive, there is an "noisy" option to study the effect of Gaussian noise and stability of the dataset.
+Also, as metagenomic tools are very sensitive, there is a "noisy" option to study the effect of Gaussian noise and stability of the dataset.
 
 ## Installation
 

@@ -7,7 +7,7 @@ Metagenomic data can be coming from multiple sources:
 - Linked-Reads (10X)
 
 Metagenomics data can be defined as follow:
-- Quantatitive: Metagenomic results are usually quantative. Based on the tool they can be absolute or relative values in a given sample
+- Quantitative: Metagenomic results are usually quantitative. Based on the tool they can be absolute or relative values in a given sample
 - Categorical: Variables represent types of data which may be divided into groups
 - Nominal: Data that is classified without a natural order or rank
 - Unbalanced: Most of the dataset are usually unbalanced in nature
@@ -192,6 +192,9 @@ random_forest clr,0.9056603773584906,0.8785195936139333,0.03640502469381202
 
 leave-one: Leave One Group Out cross-validation which provides train/test indices to split data according to a third-party provided group. This group information can be used to encode arbitrary domain specific stratifications of the samples as integers. The parameters *group-name* (usually arbitary group) and *feature-name* (usually location like city, continent) needs to be set.
 
+
+## Citation
+Bhattacharya, C., Tierney, B.T., Ryon, K.A., Bhattacharyya, M., Hastings, J.J., Basu, S., Bhattacharya, B., Bagchi, D., Mukherjee, S., Wang, L. and Henaff, E.M., 2022. Supervised Machine Learning Enables Geospatial Microbial Provenance. Genes, 13(10), p.1914.
 
 ## Datasets
 
